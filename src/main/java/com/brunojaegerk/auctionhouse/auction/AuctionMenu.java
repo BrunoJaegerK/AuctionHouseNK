@@ -10,10 +10,16 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 public final class AuctionMenu {
 
     private static final int MAX_ITEMS_PER_PAGE = 45;
+
+    private static final int MY_AUCTIONS_SLOT = 45;
+    private static final int PREVIOUS_PAGE_SLOT = 48;
+    private static final int PAGE_INFO_SLOT = 49;
+    private static final int NEXT_PAGE_SLOT = 50;
 
     private final PluginBase plugin;
     private final AuctionManager auctionManager;
@@ -30,21 +36,29 @@ public final class AuctionMenu {
     }
 
     public void open(Player player) {
-        open(player, 0);
+        open(player, 0, false);
     }
 
-    private void open(Player player, int requestedPage) {
+    private void open(
+            Player player,
+            int requestedPage,
+            boolean ownAuctions
+    ) {
         if (player == null || !player.isOnline()) {
             return;
         }
 
-        player.sendMessage(
-                "§e[AH DEBUG] Comando recibido; preparando menú."
-        );
-
         try {
-            List<Auction> auctions =
-                    auctionManager.getActiveAuctions();
+            List<Auction> auctions;
+
+            if (ownAuctions) {
+                UUID playerUUID = player.getUniqueId();
+                auctions = auctionManager.getActiveAuctionsBySeller(
+                        playerUUID
+                );
+            } else {
+                auctions = auctionManager.getActiveAuctions();
+            }
 
             int totalPages = Math.max(
                     1,
@@ -64,9 +78,13 @@ public final class AuctionMenu {
                     auctions.size()
             );
 
+            String title = ownAuctions
+                    ? "§8Mis subastas"
+                    : "§8Casa de subastas";
+
             FakeInventory inventory = new FakeInventory(
                     InventoryType.DOUBLE_CHEST,
-                    "§8Casa de subastas"
+                    title
             ) {
                 @Override
                 public void onOpen(Player player) {
@@ -86,12 +104,7 @@ public final class AuctionMenu {
                     (item, event) -> event.setCancelled(true)
             );
 
-            player.sendMessage(
-                    "§e[AH DEBUG] Subastas encontradas: "
-                            + auctions.size()
-            );
-
-            // Artículos de la página actual.
+            // Mostrar las subastas de la página seleccionada.
             int slot = 0;
 
             for (int index = startIndex; index < endIndex; index++) {
@@ -111,7 +124,9 @@ public final class AuctionMenu {
                             ),
                             "§8ID de subasta: " + auction.getId(),
                             "",
-                            "§aHaz clic para comprar"
+                            ownAuctions
+                                    ? "§7Esta es tu publicación."
+                                    : "§aHaz clic para comprar"
                     );
 
                     final long auctionId = auction.getId();
@@ -122,6 +137,13 @@ public final class AuctionMenu {
                         Player buyer = event.getTransaction().getSource();
 
                         if (buyer == null || !buyer.isOnline()) {
+                            return;
+                        }
+
+                        if (ownAuctions) {
+                            buyer.sendMessage(
+                                    "§eEsta es tu propia subasta."
+                            );
                             return;
                         }
 
@@ -143,26 +165,79 @@ public final class AuctionMenu {
                 inventory.setItem(
                         22,
                         Item.get(323).setCustomName(
-                                "§cNo hay subastas activas"
+                                ownAuctions
+                                        ? "§cNo tienes subastas activas"
+                                        : "§cNo hay subastas activas"
                         )
                 );
             }
 
-            // Botón de información: casilla 49.
-            Item infoButton = Item.get(339);
-            infoButton.setCustomName("§bInformación de subastas");
-            infoButton.setLore(
-                    "§7Casa de subastas",
-                    "§7Consulta los artículos disponibles.",
-                    "",
-                    "§7Página: §f" + (currentPage + 1)
-                            + "§7/§f" + totalPages,
-                    "§7Subastas activas: §f" + auctions.size(),
-                    "",
-                    "§eHaz clic para ver la información."
+            // Casilla 45: Mis subastas / volver al listado general.
+            Item myAuctionsButton = Item.get(54);
+
+            myAuctionsButton.setCustomName(
+                    ownAuctions
+                            ? "§eVolver a todas las subastas"
+                            : "§aMis subastas"
             );
 
-            inventory.setItem(49, infoButton, (item, event) -> {
+            myAuctionsButton.setLore(
+                    ownAuctions
+                            ? "§7Regresar al mercado general."
+                            : "§7Ver tus publicaciones activas.",
+                    "",
+                    "§eHaz clic para abrir."
+            );
+
+            inventory.setItem(
+                    MY_AUCTIONS_SLOT,
+                    myAuctionsButton,
+                    (item, event) -> {
+                        event.setCancelled(true);
+
+                        Player clicker = event.getTransaction().getSource();
+
+                        if (clicker == null || !clicker.isOnline()) {
+                            return;
+                        }
+
+                        boolean targetOwnAuctions = !ownAuctions;
+
+                        clicker.removeWindow(inventory);
+
+                        plugin.getServer().getScheduler().scheduleDelayedTask(
+                                plugin,
+                                () -> {
+                                    if (!clicker.isOnline()) {
+                                        return;
+                                    }
+
+                                    open(clicker, 0, targetOwnAuctions);
+                                },
+                                10
+                        );
+                    }
+            );
+
+            // Casilla 49: información.
+            Item infoButton = Item.get(339);
+            infoButton.setCustomName(
+                    ownAuctions
+                            ? "§bInformación de mis subastas"
+                            : "§bInformación de subastas"
+            );
+
+            infoButton.setLore(
+                    "§7Página: §f" + (currentPage + 1)
+                            + "§7/§f" + totalPages,
+                    "§7Publicaciones mostradas: §f" + auctions.size(),
+                    "",
+                    ownAuctions
+                            ? "§7Aquí aparecen tus publicaciones activas."
+                            : "§7Aquí aparecen las publicaciones activas."
+            );
+
+            inventory.setItem(PAGE_INFO_SLOT, infoButton, (item, event) -> {
                 event.setCancelled(true);
 
                 Player clicker = event.getTransaction().getSource();
@@ -177,71 +252,71 @@ public final class AuctionMenu {
                                 + "§7/§f" + totalPages
                 );
                 clicker.sendMessage(
-                        "§7Subastas activas: §f" + auctions.size()
+                        "§7Publicaciones activas: §f" + auctions.size()
                 );
             });
 
-            // Botón de página anterior: casilla 48.
+            // Casilla 48: página anterior.
             Item previousButton = Item.get(262);
 
-            if (currentPage > 0) {
-                previousButton.setCustomName("§ePágina anterior");
-                previousButton.setLore(
-                        "§7Ir a la página " + currentPage
-                );
-            } else {
-                previousButton.setCustomName(
-                        "§8No hay página anterior"
-                );
-            }
+            previousButton.setCustomName(
+                    currentPage > 0
+                            ? "§ePágina anterior"
+                            : "§8No hay página anterior"
+            );
 
-            inventory.setItem(48, previousButton, (item, event) -> {
-                event.setCancelled(true);
+            inventory.setItem(
+                    PREVIOUS_PAGE_SLOT,
+                    previousButton,
+                    (item, event) -> {
+                        event.setCancelled(true);
 
-                Player clicker = event.getTransaction().getSource();
+                        Player clicker =
+                                event.getTransaction().getSource();
 
-                if (clicker == null || !clicker.isOnline()) {
-                    return;
-                }
+                        if (clicker == null || !clicker.isOnline()) {
+                            return;
+                        }
 
-                if (currentPage > 0) {
-                    open(clicker, currentPage - 1);
-                }
-            });
+                        if (currentPage > 0) {
+                            open(clicker, currentPage - 1, ownAuctions);
+                        }
+                    }
+            );
 
-            // Botón de página siguiente: casilla 50.
+            // Casilla 50: página siguiente.
             Item nextButton = Item.get(262);
 
-            if (currentPage < totalPages - 1) {
-                nextButton.setCustomName("§ePágina siguiente");
-                nextButton.setLore(
-                        "§7Ir a la página " + (currentPage + 2)
-                );
-            } else {
-                nextButton.setCustomName(
-                        "§8No hay página siguiente"
-                );
-            }
+            nextButton.setCustomName(
+                    currentPage < totalPages - 1
+                            ? "§ePágina siguiente"
+                            : "§8No hay página siguiente"
+            );
 
-            inventory.setItem(50, nextButton, (item, event) -> {
-                event.setCancelled(true);
+            inventory.setItem(
+                    NEXT_PAGE_SLOT,
+                    nextButton,
+                    (item, event) -> {
+                        event.setCancelled(true);
 
-                Player clicker = event.getTransaction().getSource();
+                        Player clicker =
+                                event.getTransaction().getSource();
 
-                if (clicker == null || !clicker.isOnline()) {
-                    return;
-                }
+                        if (clicker == null || !clicker.isOnline()) {
+                            return;
+                        }
 
-                if (currentPage < totalPages - 1) {
-                    open(clicker, currentPage + 1);
-                }
-            });
+                        if (currentPage < totalPages - 1) {
+                            open(clicker, currentPage + 1, ownAuctions);
+                        }
+                    }
+            );
 
             player.sendMessage(
                     "§e[AH DEBUG] Intentando abrir inventario."
             );
 
-            // Se conserva el retraso original que ya funcionaba.
+            // Conservamos el retraso que ya funciona en tu servidor.
             plugin.getServer().getScheduler().scheduleDelayedTask(
                     plugin,
                     () -> {
@@ -256,7 +331,7 @@ public final class AuctionMenu {
                                         + windowId
                         );
                     },
-                    20
+                    10
             );
 
         } catch (SQLException exception) {
@@ -271,4 +346,5 @@ public final class AuctionMenu {
         }
     }
 }
+
 
