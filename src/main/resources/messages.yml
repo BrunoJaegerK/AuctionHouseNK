@@ -1,0 +1,23 @@
+prefix: "§8[§6AuctionHouse§8] §r"
+
+general:
+  no-permission: "§cNo tienes permiso para realizar esta acción."
+  player-only: "§cEste comando solo puede utilizarse dentro del juego."
+  error: "§cHa ocurrido un error. Inténtalo de nuevo."
+  reloaded: "§aLa configuración se ha recargado correctamente."
+
+auction:
+  opening: "§eAbriendo la casa de subastas..."
+  not-found: "§cNo se encontró esa publicación."
+  invalid-price: "§cIntroduce un precio válido."
+  price-too-low: "§cEl precio está por debajo del mínimo permitido."
+  price-too-high: "§cEl precio supera el máximo permitido."
+  inventory-full: "§cNo tienes suficiente espacio en el inventario."
+  listing-created: "§aTu objeto se ha publicado correctamente."
+  listing-limit: "§cHas alcanzado el límite de publicaciones."
+  self-purchase: "§cNo puedes comprar tu propia publicación."
+
+economy:
+  insufficient-funds: "§cNo tienes dinero suficiente."
+  purchase-success: "§aCompra realizada correctamente."
+  seller-payment-error: "§cNo se pudo completar el pago. La operación requiere revisión."

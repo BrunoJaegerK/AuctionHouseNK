@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.brunojaegerk</groupId>
+    <artifactId>auctionhouse</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>AuctionHouse</name>
+    <description>Casa de subastas para NukkitPetteriM1Edition</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>25</maven.compiler.release>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>luminiadev-releases</id>
+            <url>https://repo.luminiadev.com/releases</url>
+        </repository>
+
+        <repository>
+            <id>nukkitx-snapshots</id>
+            <url>https://repo.nukkitx.com/snapshot</url>
+        </repository>
+
+        <repository>
+            <id>opencollab-releases</id>
+            <url>https://repo.opencollab.dev/maven-releases/</url>
+        </repository>
+
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+
+        <!-- NukkitPetteriM1Edition: usa tu server.jar local -->
+        <dependency>
+            <groupId>cn.nukkit</groupId>
+            <artifactId>Nukkit</artifactId>
+            <version>PM1E</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/server.jar</systemPath>
+        </dependency>
+
+        <!-- FakeInventories para NukkitPetteriM1Edition -->
+        <dependency>
+            <groupId>me.iwareq</groupId>
+            <artifactId>FakeInventories</artifactId>
+            <version>1.1.8-PM1E-IWareQ</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/FakeInventories-1.1.8-PM1E-IWareQ.jar</systemPath>
+        </dependency>
+
+        <!-- FormConstructor 3.1.0 -->
+        <dependency>
+            <groupId>com.mefrreex.formconstructor</groupId>
+            <artifactId>formconstructor</artifactId>
+            <version>3.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- EconomyAPI 2.0.7: JAR local -->
+        <dependency>
+            <groupId>me.onebone</groupId>
+            <artifactId>economyapi</artifactId>
+            <version>2.0.7</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/economyapi-2.0.7.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.53.0.0</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <finalName>AuctionHouse-${project.version}</finalName>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.14.1</version>
+                <configuration>
+                    <release>25</release>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

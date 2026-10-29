@@ -1,0 +1,30 @@
+name: AuctionHouse
+main: com.brunojaegerk.auctionhouse.Main
+version: "1.0.0"
+api: ["1.0.13"]
+author: BrunoJaegerK
+description: Casa de subastas para NukkitPetteriM1Edition
+
+depend:
+  - FakeInventories
+  - FormConstructor
+  - EconomyAPI
+
+commands:
+  ah:
+    description: Abre la casa de subastas
+    usage: "/ah"
+    permission: auctionhouse.use
+
+permissions:
+  auctionhouse.use:
+    description: Permite abrir la casa de subastas
+    default: true
+
+  auctionhouse.sell:
+    description: Permite publicar objetos en la subasta
+    default: true
+
+  auctionhouse.admin:
+    description: Permite administrar la casa de subastas
+    default: op
