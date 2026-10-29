@@ -8,6 +8,7 @@ import cn.nukkit.plugin.PluginBase;
 
 import com.brunojaegerk.auctionhouse.auction.AuctionManager;
 import com.brunojaegerk.auctionhouse.auction.AuctionMenu;
+import com.brunojaegerk.auctionhouse.auction.AuctionPurchaseService;
 import com.brunojaegerk.auctionhouse.auction.AuctionService;
 import com.brunojaegerk.auctionhouse.auction.ItemSerializer;
 import com.brunojaegerk.auctionhouse.storage.DatabaseManager;
@@ -24,6 +25,7 @@ public class Main extends PluginBase {
     private AuctionService auctionService;
     private PendingItemManager pendingItemManager;
     private AuctionMenu auctionMenu;
+    private AuctionPurchaseService auctionPurchaseService;
 
     @Override
     public void onEnable() {
@@ -35,8 +37,19 @@ public class Main extends PluginBase {
             databaseManager.initialize();
 
             auctionManager = new AuctionManager(databaseManager);
-            this.auctionMenu = new AuctionMenu(this, auctionManager);
-            pendingItemManager = new PendingItemManager(databaseManager);
+
+            // Crear el servicio de compra antes de inicializar el menú.
+            auctionPurchaseService =
+                    new AuctionPurchaseService(auctionManager);
+
+            auctionMenu = new AuctionMenu(
+                    this,
+                    auctionManager,
+                    auctionPurchaseService
+            );
+
+            pendingItemManager =
+                    new PendingItemManager(databaseManager);
 
             auctionService = new AuctionService(
                     databaseManager,
@@ -61,6 +74,7 @@ public class Main extends PluginBase {
         getLogger().info("Gestor de subastas inicializado.");
         getLogger().info("Gestor de objetos pendientes inicializado.");
         getLogger().info("Servicio de subastas inicializado.");
+        getLogger().info("Servicio de compras inicializado.");
         getLogger().info("Economía: EconomyAPI.");
     }
 
@@ -87,6 +101,10 @@ public class Main extends PluginBase {
 
     public PendingItemManager getPendingItemManager() {
         return pendingItemManager;
+    }
+
+    public AuctionPurchaseService getAuctionPurchaseService() {
+        return auctionPurchaseService;
     }
 
     @Override
@@ -119,8 +137,8 @@ public class Main extends PluginBase {
         if (args.length == 1
                 && args[0].equalsIgnoreCase("testitem")) {
 
-            if (!sender.hasPermission("auctionhouse.admin")) {
-                sender.sendMessage(
+            if (!player.hasPermission("auctionhouse.admin")) {
+                player.sendMessage(
                         "§cNo tienes permiso para usar esta prueba."
                 );
                 return true;
@@ -150,6 +168,13 @@ public class Main extends PluginBase {
             return true;
         }
 
+        if (auctionMenu == null) {
+            player.sendMessage(
+                    "§cLa casa de subastas no está disponible."
+            );
+            return true;
+        }
+
         auctionMenu.open(player);
         return true;
     }
@@ -158,7 +183,9 @@ public class Main extends PluginBase {
         Item original = player.getInventory().getItemInHand();
 
         if (original == null || original.isNull()) {
-            player.sendMessage("§cDebes tener un objeto en la mano.");
+            player.sendMessage(
+                    "§cDebes tener un objeto en la mano."
+            );
             return;
         }
 
@@ -166,9 +193,14 @@ public class Main extends PluginBase {
             byte[] serialized = ItemSerializer.serialize(original);
             Item restored = ItemSerializer.deserialize(serialized);
 
-            boolean sameId = original.getId() == restored.getId();
-            boolean sameDamage = original.getDamage() == restored.getDamage();
-            boolean sameCount = original.getCount() == restored.getCount();
+            boolean sameId =
+                    original.getId() == restored.getId();
+
+            boolean sameDamage =
+                    original.getDamage() == restored.getDamage();
+
+            boolean sameCount =
+                    original.getCount() == restored.getCount();
 
             boolean sameNbt = Arrays.equals(
                     original.getCompoundTag(),
@@ -192,6 +224,7 @@ public class Main extends PluginBase {
                 player.sendMessage(
                         "§cLa prueba falló: los datos no coinciden."
                 );
+
                 getLogger().warning(
                         "La serialización no coincide para "
                                 + player.getName()
@@ -211,22 +244,33 @@ public class Main extends PluginBase {
         }
     }
 
-    private void sellItem(Player player, String priceArgument) {
+    private void sellItem(
+            Player player,
+            String priceArgument
+    ) {
         final double price;
 
         try {
             price = Double.parseDouble(priceArgument);
         } catch (NumberFormatException exception) {
-            player.sendMessage("§cEl precio debe ser un número válido.");
+            player.sendMessage(
+                    "§cEl precio debe ser un número válido."
+            );
             return;
         }
 
         if (!Double.isFinite(price) || price <= 0) {
-            player.sendMessage("§cEl precio debe ser positivo.");
+            player.sendMessage(
+                    "§cEl precio debe ser positivo."
+            );
             return;
         }
 
-        double minPrice = getConfig().getDouble("auction.min-price", 1.0);
+        double minPrice = getConfig().getDouble(
+                "auction.min-price",
+                1.0
+        );
+
         double maxPrice = getConfig().getDouble(
                 "auction.max-price",
                 1000000000.0
@@ -252,6 +296,13 @@ public class Main extends PluginBase {
             return;
         }
 
+        if (auctionManager == null || auctionService == null) {
+            player.sendMessage(
+                    "§cEl servicio de subastas no está disponible."
+            );
+            return;
+        }
+
         try {
             int currentListings = auctionManager
                     .getActiveAuctionsBySeller(player.getUniqueId())
@@ -260,7 +311,8 @@ public class Main extends PluginBase {
             if (currentListings >= maxListings) {
                 player.sendMessage(
                         "§cHas alcanzado tu límite de "
-                                + maxListings + " publicaciones activas."
+                                + maxListings
+                                + " publicaciones activas."
                 );
                 return;
             }
@@ -286,9 +338,15 @@ public class Main extends PluginBase {
                     durationMillis
             );
 
-            player.sendMessage("§a¡Publicación creada correctamente!");
-            player.sendMessage("§7ID: §f#" + listingId);
-            player.sendMessage("§7Precio de la pila: §a" + price);
+            player.sendMessage(
+                    "§a¡Publicación creada correctamente!"
+            );
+            player.sendMessage(
+                    "§7ID: §f#" + listingId
+            );
+            player.sendMessage(
+                    "§7Precio de la pila: §a" + price
+            );
             player.sendMessage(
                     "§7Duración: §f" + durationHours + " horas"
             );
@@ -321,3 +379,4 @@ public class Main extends PluginBase {
         }
     }
 }
+

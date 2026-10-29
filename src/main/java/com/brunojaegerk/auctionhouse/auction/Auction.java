@@ -7,6 +7,7 @@ public final class Auction {
     public enum Status {
         PENDING,
         ACTIVE,
+        PURCHASE_PENDING,
         SOLD,
         EXPIRED,
         CANCELLED

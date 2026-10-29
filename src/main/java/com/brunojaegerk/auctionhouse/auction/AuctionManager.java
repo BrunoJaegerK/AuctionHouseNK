@@ -250,18 +250,19 @@ public final class AuctionManager {
 
     public boolean cancelPending(long id) throws SQLException {
         String sql = """
-            UPDATE auction_listings
-            SET status = 'CANCELLED'
-            WHERE id = ? AND status = 'PENDING'
-            """;
+        UPDATE auction_listings
+        SET status = 'CANCELLED'
+        WHERE id = ? AND status = 'PENDING'
+        """;
 
-        try (Connection connection = databaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+        Connection connection = databaseManager.getConnection();
 
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
             return statement.executeUpdate() == 1;
         }
     }
+
 
     public boolean cancelPendingAndSaveItem(long listingId)
             throws SQLException {
@@ -375,6 +376,60 @@ public final class AuctionManager {
                         exception
                 );
             }
+        }
+    }
+
+    public boolean reservePurchase(long id) throws SQLException {
+        String sql = """
+            UPDATE auction_listings
+            SET status = ?
+            WHERE id = ? AND status = ?
+            """;
+
+        try (PreparedStatement statement =
+                     databaseManager.getConnection().prepareStatement(sql)) {
+
+            statement.setString(1, Auction.Status.PURCHASE_PENDING.name());
+            statement.setLong(2, id);
+            statement.setString(3, Auction.Status.ACTIVE.name());
+
+            return statement.executeUpdate() == 1;
+        }
+    }
+
+    public boolean releasePurchase(long id) throws SQLException {
+        String sql = """
+            UPDATE auction_listings
+            SET status = ?
+            WHERE id = ? AND status = ?
+            """;
+
+        try (PreparedStatement statement =
+                     databaseManager.getConnection().prepareStatement(sql)) {
+
+            statement.setString(1, Auction.Status.ACTIVE.name());
+            statement.setLong(2, id);
+            statement.setString(3, Auction.Status.PURCHASE_PENDING.name());
+
+            return statement.executeUpdate() == 1;
+        }
+    }
+
+    public boolean completePurchase(long id) throws SQLException {
+        String sql = """
+            UPDATE auction_listings
+            SET status = ?
+            WHERE id = ? AND status = ?
+            """;
+
+        try (PreparedStatement statement =
+                     databaseManager.getConnection().prepareStatement(sql)) {
+
+            statement.setString(1, Auction.Status.SOLD.name());
+            statement.setLong(2, id);
+            statement.setString(3, Auction.Status.PURCHASE_PENDING.name());
+
+            return statement.executeUpdate() == 1;
         }
     }
 }
