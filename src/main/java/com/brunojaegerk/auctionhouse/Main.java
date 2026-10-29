@@ -35,7 +35,7 @@ public class Main extends PluginBase {
             databaseManager.initialize();
 
             auctionManager = new AuctionManager(databaseManager);
-            this.auctionMenu = new AuctionMenu(auctionManager);
+            this.auctionMenu = new AuctionMenu(this, auctionManager);
             pendingItemManager = new PendingItemManager(databaseManager);
 
             auctionService = new AuctionService(

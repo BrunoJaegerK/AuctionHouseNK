@@ -3,6 +3,7 @@ package com.brunojaegerk.auctionhouse.auction;
 import cn.nukkit.Player;
 import cn.nukkit.inventory.InventoryType;
 import cn.nukkit.item.Item;
+import cn.nukkit.plugin.PluginBase;
 import me.iwareq.fakeinventories.FakeInventory;
 
 import java.io.IOException;
@@ -14,15 +15,14 @@ public final class AuctionMenu {
 
     private static final int MAX_ITEMS_PER_PAGE = 27;
 
+    private final PluginBase plugin;
     private final AuctionManager auctionManager;
 
-    public AuctionMenu(AuctionManager auctionManager) {
-        if (auctionManager == null) {
-            throw new IllegalArgumentException(
-                    "AuctionManager no puede ser null."
-            );
+    public AuctionMenu(PluginBase plugin, AuctionManager auctionManager) {
+        if (plugin == null || auctionManager == null) {
+            throw new IllegalArgumentException("Argumentos no válidos.");
         }
-
+        this.plugin = plugin;
         this.auctionManager = auctionManager;
     }
 
@@ -38,7 +38,20 @@ public final class AuctionMenu {
         FakeInventory inventory = new FakeInventory(
                 InventoryType.CHEST,
                 "§8Casa de subastas"
-        );
+        ) {
+            @Override
+            public void onOpen(Player player) {
+                player.sendMessage(
+                        "§b[AH DEBUG] FakeInventory.onOpen ejecutado."
+                );
+
+                super.onOpen(player);
+
+                player.sendMessage(
+                        "§b[AH DEBUG] FakeInventory.onOpen finalizado."
+                );
+            }
+        };
 
         // Evita que los jugadores muevan objetos de la interfaz.
         inventory.setDefaultItemHandler(
@@ -99,15 +112,16 @@ public final class AuctionMenu {
                 );
             }
 
-            player.sendMessage(
-                    "§e[AH DEBUG] Intentando abrir inventario."
-            );
+            player.sendMessage("§e[AH DEBUG] Intentando abrir inventario.");
 
-            int windowId = player.addWindow(inventory);
+            plugin.getServer().getScheduler().scheduleDelayedTask(plugin, () -> {
+                if (!player.isOnline()) {
+                    return;
+                }
 
-            player.sendMessage(
-                    "§e[AH DEBUG] Resultado de addWindow: " + windowId
-            );
+                int windowId = player.addWindow(inventory);
+                player.sendMessage("§e[AH DEBUG] Resultado de addWindow: " + windowId);
+            }, 20);
 
         } catch (SQLException exception) {
             System.err.println(
