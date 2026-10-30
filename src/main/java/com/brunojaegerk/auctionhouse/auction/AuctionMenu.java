@@ -5,6 +5,8 @@ import cn.nukkit.inventory.InventoryType;
 import cn.nukkit.item.Item;
 import cn.nukkit.plugin.PluginBase;
 import me.iwareq.fakeinventories.FakeInventory;
+import com.brunojaegerk.auctionhouse.storage.PendingItemManager;
+import com.brunojaegerk.auctionhouse.storage.StorageMenu;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -24,15 +26,23 @@ public final class AuctionMenu {
     private final PluginBase plugin;
     private final AuctionManager auctionManager;
     private final AuctionPurchaseService purchaseService;
+    private final StorageMenu storageMenu;
 
     public AuctionMenu(
             PluginBase plugin,
             AuctionManager auctionManager,
-            AuctionPurchaseService purchaseService
+            AuctionPurchaseService purchaseService,
+            PendingItemManager pendingItemManager
     ) {
         this.plugin = plugin;
         this.auctionManager = auctionManager;
         this.purchaseService = purchaseService;
+
+        this.storageMenu = new StorageMenu(
+                plugin,
+                pendingItemManager,
+                this
+        );
     }
 
     public void open(Player player) {
@@ -218,6 +228,40 @@ public final class AuctionMenu {
                         );
                     }
             );
+
+            // Casilla 46: Storage.
+            Item storageButton = Item.get(130);
+
+            storageButton.setCustomName("§aStorage");
+
+            storageButton.setLore(
+                    "§7Recupera objetos de publicaciones",
+                    "§7vencidas o canceladas.",
+                    "",
+                    "§eHaz clic para abrir."
+            );
+
+            inventory.setItem(46, storageButton, (item, event) -> {
+                event.setCancelled(true);
+
+                Player clicker = event.getTransaction().getSource();
+
+                if (clicker == null || !clicker.isOnline()) {
+                    return;
+                }
+
+                clicker.removeWindow(inventory);
+
+                plugin.getServer().getScheduler().scheduleDelayedTask(
+                        plugin,
+                        () -> {
+                            if (clicker.isOnline()) {
+                                storageMenu.open(clicker);
+                            }
+                        },
+                        10
+                );
+            });
 
             // Casilla 49: información.
             Item infoButton = Item.get(339);

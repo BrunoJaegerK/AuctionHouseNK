@@ -38,18 +38,17 @@ public class Main extends PluginBase {
 
             auctionManager = new AuctionManager(databaseManager);
 
-            // Crear el servicio de compra antes de inicializar el menú.
+            pendingItemManager = new PendingItemManager(databaseManager);
+
             auctionPurchaseService =
                     new AuctionPurchaseService(auctionManager);
 
             auctionMenu = new AuctionMenu(
                     this,
                     auctionManager,
-                    auctionPurchaseService
+                    auctionPurchaseService,
+                    pendingItemManager
             );
-
-            pendingItemManager =
-                    new PendingItemManager(databaseManager);
 
             auctionService = new AuctionService(
                     databaseManager,
@@ -66,6 +65,31 @@ public class Main extends PluginBase {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+
+        getServer().getScheduler().scheduleRepeatingTask(
+                this,
+                () -> {
+                    try {
+                        int expired = auctionManager.expireDueAuctions(
+                                System.currentTimeMillis()
+                        );
+
+                        if (expired > 0) {
+                            getLogger().info(
+                                    "Se transfirieron " + expired
+                                            + " publicaciones vencidas a Storage."
+                            );
+                        }
+
+                    } catch (SQLException exception) {
+                        getLogger().error(
+                                "Error al procesar publicaciones vencidas.",
+                                exception
+                        );
+                    }
+                },
+                20 * 60
+        );
 
         getLogger().info(
                 "AuctionHouse 1.0.0 se ha habilitado correctamente."

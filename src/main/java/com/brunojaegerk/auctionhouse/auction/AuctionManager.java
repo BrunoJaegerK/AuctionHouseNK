@@ -102,11 +102,12 @@ public final class AuctionManager {
 
     public List<Auction> getActiveAuctions() throws SQLException {
         String sql = """
-                SELECT *
-                FROM auction_listings
-                WHERE status = ?
-                ORDER BY created_at DESC, id DESC
-                """;
+        SELECT *
+        FROM auction_listings
+        WHERE status = ?
+          AND expires_at > ?
+        ORDER BY created_at DESC, id DESC
+        """;
 
         List<Auction> auctions = new ArrayList<>();
 
@@ -114,6 +115,7 @@ public final class AuctionManager {
                      databaseManager.getConnection().prepareStatement(sql)) {
 
             statement.setString(1, Auction.Status.ACTIVE.name());
+            statement.setLong(2, System.currentTimeMillis());
 
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
@@ -135,11 +137,13 @@ public final class AuctionManager {
         }
 
         String sql = """
-                SELECT *
-                FROM auction_listings
-                WHERE seller_uuid = ? AND status = ?
-                ORDER BY created_at DESC, id DESC
-                """;
+        SELECT *
+        FROM auction_listings
+        WHERE seller_uuid = ?
+          AND status = ?
+          AND expires_at > ?
+        ORDER BY created_at DESC, id DESC
+        """;
 
         List<Auction> auctions = new ArrayList<>();
 
@@ -148,6 +152,7 @@ public final class AuctionManager {
 
             statement.setString(1, sellerUUID.toString());
             statement.setString(2, Auction.Status.ACTIVE.name());
+            statement.setLong(3, System.currentTimeMillis());
 
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
@@ -430,6 +435,165 @@ public final class AuctionManager {
             statement.setString(3, Auction.Status.PURCHASE_PENDING.name());
 
             return statement.executeUpdate() == 1;
+        }
+    }
+
+    public int expireDueAuctions(long currentTimeMillis)
+            throws SQLException {
+
+        if (currentTimeMillis < 0) {
+            throw new IllegalArgumentException(
+                    "El tiempo actual no puede ser negativo."
+            );
+        }
+
+        Connection connection = databaseManager.getConnection();
+        boolean originalAutoCommit = connection.getAutoCommit();
+        int expiredCount = 0;
+
+        try {
+            connection.setAutoCommit(false);
+
+            List<ExpiredListing> expiredListings = new ArrayList<>();
+
+            String selectSql = """
+                SELECT id, seller_uuid, item_data
+                FROM auction_listings
+                WHERE status = ?
+                  AND expires_at <= ?
+                ORDER BY id ASC
+                """;
+
+            try (PreparedStatement statement =
+                         connection.prepareStatement(selectSql)) {
+
+                statement.setString(1, Auction.Status.ACTIVE.name());
+                statement.setLong(2, currentTimeMillis);
+
+                try (ResultSet result = statement.executeQuery()) {
+                    while (result.next()) {
+                        long id = result.getLong("id");
+                        String sellerUUID = result.getString("seller_uuid");
+                        byte[] itemData = result.getBytes("item_data");
+
+                        if (sellerUUID == null
+                                || itemData == null
+                                || itemData.length == 0) {
+                            throw new SQLException(
+                                    "Datos inválidos en la publicación vencida #"
+                                            + id
+                            );
+                        }
+
+                        try {
+                            UUID.fromString(sellerUUID);
+                        } catch (IllegalArgumentException exception) {
+                            throw new SQLException(
+                                    "UUID inválido en la publicación vencida #"
+                                            + id,
+                                    exception
+                            );
+                        }
+
+                        expiredListings.add(
+                                new ExpiredListing(
+                                        id,
+                                        sellerUUID,
+                                        itemData
+                                )
+                        );
+                    }
+                }
+            }
+
+            String insertSql = """
+                INSERT INTO pending_items (
+                    owner_uuid,
+                    item_data,
+                    reason,
+                    created_at
+                ) VALUES (?, ?, ?, ?)
+                """;
+
+            String updateSql = """
+                UPDATE auction_listings
+                SET status = ?
+                WHERE id = ?
+                  AND status = ?
+                  AND expires_at <= ?
+                """;
+
+            for (ExpiredListing listing : expiredListings) {
+
+                try (PreparedStatement insert =
+                             connection.prepareStatement(insertSql)) {
+
+                    insert.setString(1, listing.sellerUUID);
+                    insert.setBytes(2, listing.itemData);
+                    insert.setString(
+                            3,
+                            "EXPIRED_LISTING:" + listing.id
+                    );
+                    insert.setLong(4, currentTimeMillis);
+
+                    if (insert.executeUpdate() != 1) {
+                        throw new SQLException(
+                                "No se pudo guardar en Storage el objeto "
+                                        + "de la publicación #" + listing.id
+                        );
+                    }
+                }
+
+                try (PreparedStatement update =
+                             connection.prepareStatement(updateSql)) {
+
+                    update.setString(1, Auction.Status.EXPIRED.name());
+                    update.setLong(2, listing.id);
+                    update.setString(3, Auction.Status.ACTIVE.name());
+                    update.setLong(4, currentTimeMillis);
+
+                    if (update.executeUpdate() != 1) {
+                        throw new SQLException(
+                                "No se pudo marcar como vencida la publicación #"
+                                        + listing.id
+                        );
+                    }
+                }
+
+                expiredCount++;
+            }
+
+            connection.commit();
+            return expiredCount;
+
+        } catch (SQLException | RuntimeException exception) {
+            try {
+                connection.rollback();
+            } catch (SQLException rollbackException) {
+                exception.addSuppressed(rollbackException);
+            }
+
+            throw exception;
+
+        } finally {
+            connection.setAutoCommit(originalAutoCommit);
+        }
+    }
+
+    private static final class ExpiredListing {
+
+        private final long id;
+        private final String sellerUUID;
+        private final byte[] itemData;
+
+        private ExpiredListing(
+                long id,
+                String sellerUUID,
+                byte[] itemData
+        ) {
+            this.id = id;
+            this.sellerUUID = sellerUUID;
+            this.itemData = itemData.clone();
         }
     }
 }
