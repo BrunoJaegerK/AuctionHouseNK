@@ -7,6 +7,7 @@ import cn.nukkit.plugin.PluginBase;
 import me.iwareq.fakeinventories.FakeInventory;
 import com.brunojaegerk.auctionhouse.storage.PendingItemManager;
 import com.brunojaegerk.auctionhouse.storage.StorageMenu;
+import com.formconstructor.form.ModalForm;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -157,7 +158,17 @@ public final class AuctionMenu {
                             return;
                         }
 
-                        purchaseService.purchase(buyer, auctionId);
+                        buyer.removeWindow(inventory);
+
+                        plugin.getServer().getScheduler().scheduleDelayedTask(
+                                plugin,
+                                () -> {
+                                    if (buyer.isOnline()) {
+                                        openPurchaseConfirmation(buyer, auction);
+                                    }
+                                },
+                                10
+                        );
                     });
 
                     slot++;
@@ -388,6 +399,80 @@ public final class AuctionMenu {
                     "§cNo se pudieron cargar las subastas."
             );
         }
+    }
+
+    private void openPurchaseConfirmation(
+            Player buyer,
+            Auction auction
+    ) {
+        if (buyer == null || !buyer.isOnline()) {
+            return;
+        }
+
+        final Item item;
+
+        try {
+            item = ItemSerializer.deserialize(
+                    auction.getItemData()
+            );
+        } catch (IOException exception) {
+            plugin.getLogger().error(
+                    "No se pudo reconstruir el objeto de la subasta "
+                            + auction.getId(),
+                    exception
+            );
+
+            buyer.sendMessage(
+                    "§cNo se pudo mostrar la información de la compra."
+            );
+            return;
+        }
+
+        String price = String.format(
+                Locale.US,
+                "%.2f",
+                auction.getPrice()
+        );
+
+        String content =
+                "§fObjeto: §b" + item.getName() + "\n\n"
+                        + "§fCantidad: §b" + item.getCount() + "\n\n"
+                        + "§fVendedor: §b" + auction.getSellerName() + "\n\n"
+                        + "§fPrecio: §6$" + price + "\n\n"
+                        + "§7¿Deseas confirmar esta compra?";
+
+        ModalForm form = new ModalForm(
+                "§8Confirmar compra",
+                content
+        );
+
+        form.setPositiveButton("§aConfirmar");
+        form.setNegativeButton("§cCancelar");
+
+        form.setHandler((player, response) -> {
+
+            if (!player.isOnline()) {
+                return;
+            }
+
+            if (response) {
+                player.sendMessage(
+                        "§eProcesando tu compra..."
+                );
+
+                purchaseService.purchase(
+                        player,
+                        auction.getId()
+                );
+
+            } else {
+                player.sendMessage(
+                        "§cHas cancelado la compra."
+                );
+            }
+        });
+
+        form.send(buyer);
     }
 }
 

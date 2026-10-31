@@ -50,10 +50,22 @@ public final class DatabaseManager {
             );
         }
 
-        File databaseFile = new File(dataFolder, databaseName);
-        String url = "jdbc:sqlite:" + databaseFile.getAbsolutePath();
+        try {
+            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException exception) {
+            throw new SQLException("No se encontró el driver de SQLite dentro del JAR.", exception);
+        }
 
-        connection = DriverManager.getConnection(url);
+        File databaseFile = new File(dataFolder, databaseName);
+
+        connection = DriverManager.getConnection(
+                "jdbc:sqlite:" + databaseFile.getAbsolutePath()
+        );
+
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("PRAGMA foreign_keys = ON");
+            statement.execute("PRAGMA busy_timeout = 5000");
+        }
 
         try {
             createTables();
@@ -272,4 +284,3 @@ public final class DatabaseManager {
         }
     }
 }
-
