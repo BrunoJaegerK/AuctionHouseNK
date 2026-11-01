@@ -294,7 +294,10 @@ Al reportar un problema, incluye:
 
 ## 📜 Licencia
 
-Consulta el archivo de licencia del repositorio para conocer las condiciones de uso, modificación y distribución del proyecto.
+Este proyecto está protegido bajo la
+[Apache License 2.0](LICENSE).
+
+Copyright © 2026 Bruno JaegerK.
 
 ---
 
