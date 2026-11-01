@@ -96,20 +96,7 @@ public final class AuctionMenu {
             FakeInventory inventory = new FakeInventory(
                     InventoryType.DOUBLE_CHEST,
                     title
-            ) {
-                @Override
-                public void onOpen(Player player) {
-                    player.sendMessage(
-                            "§b[AH DEBUG] FakeInventory.onOpen ejecutado."
-                    );
-
-                    super.onOpen(player);
-
-                    player.sendMessage(
-                            "§b[AH DEBUG] FakeInventory.onOpen finalizado."
-                    );
-                }
-            };
+            );
 
             inventory.setDefaultItemHandler(
                     (item, event) -> event.setCancelled(true)
@@ -367,11 +354,7 @@ public final class AuctionMenu {
                     }
             );
 
-            player.sendMessage(
-                    "§e[AH DEBUG] Intentando abrir inventario."
-            );
-
-            // Conservamos el retraso que ya funciona en tu servidor.
+            // Abrir la interfaz conservando el retraso de 10 ticks.
             plugin.getServer().getScheduler().scheduleDelayedTask(
                     plugin,
                     () -> {
@@ -379,12 +362,7 @@ public final class AuctionMenu {
                             return;
                         }
 
-                        int windowId = player.addWindow(inventory);
-
-                        player.sendMessage(
-                                "§e[AH DEBUG] Resultado de addWindow: "
-                                        + windowId
-                        );
+                        player.addWindow(inventory);
                     },
                     10
             );
