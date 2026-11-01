@@ -1,12 +1,12 @@
-# AuctionHouse 1.0.0
-# Configuración general
-
 auction:
   # Duración de una publicación en horas.
   listing-duration-hours: 24
 
-  # Cantidad máxima de publicaciones por jugador.
-  default-max-listings: 5
+  # Límites máximos de publicaciones por rango.
+  # 0 significa publicaciones ilimitadas.
+  listing-limits:
+    default: 5
+    vip: 10
 
   # Impuesto porcentual sobre las ventas.
   tax-percent: 0.0
@@ -21,6 +21,5 @@ auction:
   max-price: 1000000000.0
 
 storage:
-  # El almacenamiento persistente se implementará con SQLite.
   type: SQLITE
   database: auctionhouse.db

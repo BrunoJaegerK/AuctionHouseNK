@@ -13,6 +13,7 @@ import com.brunojaegerk.auctionhouse.auction.AuctionService;
 import com.brunojaegerk.auctionhouse.auction.ItemSerializer;
 import com.brunojaegerk.auctionhouse.storage.DatabaseManager;
 import com.brunojaegerk.auctionhouse.storage.PendingItemManager;
+import com.brunojaegerk.auctionhouse.auction.ListingLimitManager;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -26,12 +27,14 @@ public class Main extends PluginBase {
     private PendingItemManager pendingItemManager;
     private AuctionMenu auctionMenu;
     private AuctionPurchaseService auctionPurchaseService;
+    private ListingLimitManager listingLimitManager;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
 
         databaseManager = new DatabaseManager(this);
+        listingLimitManager = new ListingLimitManager(this);
 
         try {
             databaseManager.initialize();
@@ -308,17 +311,7 @@ public class Main extends PluginBase {
             return;
         }
 
-        int maxListings = getConfig().getInt(
-                "auction.default-max-listings",
-                5
-        );
-
-        if (maxListings <= 0) {
-            player.sendMessage(
-                    "§cLa publicación de objetos está deshabilitada temporalmente."
-            );
-            return;
-        }
+        int maxListings = listingLimitManager.getMaxListings(player);
 
         if (auctionManager == null || auctionService == null) {
             player.sendMessage(
@@ -332,7 +325,7 @@ public class Main extends PluginBase {
                     .getActiveAuctionsBySeller(player.getUniqueId())
                     .size();
 
-            if (currentListings >= maxListings) {
+            if (maxListings > 0 && currentListings >= maxListings) {
                 player.sendMessage(
                         "§cHas alcanzado tu límite de "
                                 + maxListings
