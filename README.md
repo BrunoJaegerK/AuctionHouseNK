@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <b>Una casa de subastas completa, configurable y persistente para servidores Minecraft Bedrock.</b>
+  **Una casa de subastas completa, configurable y persistente para servidores Minecraft Bedrock.**
 </p>
 
 ---
@@ -19,9 +19,7 @@
 
 Permite a los jugadores publicar objetos a la venta, consultar las ofertas disponibles, comprar artículos de otros jugadores y recuperar sus objetos cuando una publicación vence.
 
-El objetivo es ofrecer un sistema de comercio entre jugadores con una interfaz gráfica, protección durante las transacciones, límites de publicaciones por rango y almacenamiento persistente mediante SQLite.
-
-El plugin utiliza Java, Maven, SQLite, **FakeInventories**, **FormConstructor de MEFRREEX** y **EconomyAPI**.
+El objetivo es ofrecer un sistema de comercio entre jugadores con interfaces gráficas, protección durante las transacciones, límites de publicaciones por rango y almacenamiento persistente mediante SQLite.
 
 ## ✨ Características principales
 
@@ -31,15 +29,15 @@ El plugin utiliza Java, Maven, SQLite, **FakeInventories**, **FormConstructor de
 - 📄 **Paginación:** permite explorar las publicaciones disponibles.
 - 👤 **Publicaciones propias:** consulta las ofertas publicadas por el jugador.
 - 💰 **Economía integrada:** utiliza EconomyAPI para gestionar las transacciones.
-- 🔒 **Protección de compras:** reserva las publicaciones durante el proceso de compra para evitar transacciones simultáneas.
+- 🔒 **Protección de compras:** evita que una misma publicación sea procesada simultáneamente por varios compradores.
 - 🎒 **Comprobación de inventario:** valida el espacio disponible antes de entregar un objeto.
-- 🚫 **Protección de compra propia:** impide comprar las publicaciones propias cuando esta opción está desactivada.
 - ⏳ **Vencimiento automático:** las publicaciones tienen una duración configurable.
-- 📦 **Storage:** los objetos de publicaciones vencidas se conservan para que sus propietarios puedan recuperarlos.
+- 📦 **Storage:** conserva los objetos de publicaciones vencidas para que sus propietarios puedan recuperarlos.
 - 🔐 **Límites por rango:** configura distintas cantidades de publicaciones mediante permisos.
 - ♾️ **Publicaciones ilimitadas:** permite configurar límites ilimitados para determinados rangos.
 - 💾 **Base de datos SQLite:** conserva las publicaciones y sus datos después de reiniciar el servidor.
-- 🧩 **Serialización de objetos:** permite conservar los datos de los artículos almacenados.
+- 🧩 **Serialización de objetos:** conserva los datos de los artículos almacenados.
+- 📝 **Mensajes editables:** permite personalizar los mensajes del chat y los textos de las interfaces sin modificar el código fuente.
 
 ## 📋 Comandos
 
@@ -48,15 +46,15 @@ El plugin utiliza Java, Maven, SQLite, **FakeInventories**, **FormConstructor de
 | `/ah` | Abre la casa de subastas. |
 | `/ah sell <precio>` | Publica el objeto que el jugador tiene en la mano. |
 
-> Los comandos y sus permisos están definidos en la configuración del plugin (`plugin.yml`).
+Los comandos y sus permisos están definidos en `plugin.yml`.
 
 ## 🖥️ Interfaz de la casa de subastas
 
-La interfaz de AuctionHouseNK utiliza **FakeInventories** para ofrecer una experiencia de navegación mediante inventarios personalizados.
+AuctionHouseNK utiliza **FakeInventories** para ofrecer una experiencia de navegación mediante inventarios personalizados.
 
 Desde la interfaz los jugadores pueden consultar las publicaciones disponibles, navegar entre páginas y acceder a sus propias ofertas.
 
-El proceso de compra utiliza un formulario de confirmación mediante **FormConstructor**.
+El proceso de compra utiliza formularios de confirmación mediante **FormConstructor**.
 
 ### 🛒 Sistema de compras
 
@@ -68,11 +66,17 @@ El proceso de compra incorpora medidas para proteger las transacciones:
 - Evita que una misma publicación sea procesada simultáneamente por varios compradores.
 - Entrega el objeto al comprador cuando la transacción se completa.
 
+## 📦 Storage
+
+Cuando una publicación alcanza su fecha de vencimiento, sus objetos se procesan para que el propietario pueda recuperarlos mediante el sistema Storage.
+
+Esto permite conservar los artículos que ya no están disponibles en la casa de subastas.
+
 ## 🔐 Sistema de límites por rango
 
 AuctionHouseNK permite establecer diferentes límites de publicaciones activas según los permisos del jugador.
 
-Configuración inicial:
+Ejemplo de configuración:
 
 | Grupo | Permiso | Límite |
 |---|---|---:|
@@ -126,7 +130,7 @@ storage:
   database: auctionhouse.db
 ```
 
-### 📚 ¿Qué hace cada opción?
+### 📚 Opciones de configuración
 
 | Opción | Función |
 |---|---|
@@ -165,26 +169,53 @@ Después, asigna los permisos correspondientes mediante LuckPerms:
 
 No necesitas modificar el código Java para añadir nuevos rangos.
 
+## 📝 Mensajes e interfaces editables
+
+AuctionHouseNK permite personalizar los mensajes que reciben los jugadores y los textos que aparecen en las interfaces gráficas.
+
+El plugin genera dos archivos independientes:
+
+| Archivo | Descripción |
+|---|---|
+| `messages.yml` | Contiene los mensajes enviados al chat de los jugadores. |
+| `menus.yml` | Contiene los títulos, textos, botones y mensajes de las interfaces gráficas. |
+
+### 💬 messages.yml
+
+Permite modificar los mensajes del plugin, como confirmaciones, errores, avisos y notificaciones relacionadas con las publicaciones y compras.
+
+### 🖥️ menus.yml
+
+Permite personalizar los textos visibles en los inventarios personalizados y formularios, incluyendo títulos, botones, descripciones y demás elementos de las interfaces.
+
+### 🎨 Personalización
+
+- Los mensajes son editables sin modificar el código Java.
+- Los textos de las interfaces también son configurables.
+- Se admiten códigos de color de Minecraft mediante `&`.
+- Los placeholders permiten insertar información dinámica, como nombres, precios y otros datos de las operaciones.
+
+**Importante:** conserva los placeholders existentes al editar los mensajes para evitar que se pierda información dinámica.
+
 ## 🛠️ Instalación
 
 ### 📋 Requisitos
 
 - Servidor compatible con **NukkitPetteriM1Edition**.
-- **Java JDK 25**, utilizado para compilar el proyecto.
-- **FakeInventories**, para los inventarios personalizados.
-- **FormConstructor 3.1.0**, para los formularios interactivos.
-- **EconomyAPI 2.0.7**, para las transacciones económicas.
+- **Java 25**.
+- **FakeInventories 1.1.8-PM1E-IWareQ**.
+- **FormConstructor 3.1.0**.
+- **EconomyAPI 2.0.7**.
 - **LuckPerms**, opcional, para administrar los permisos de los rangos.
 
-### 📥 Enlaces de descarga
+### 📥 Enlaces de dependencias
 
-| Componente | Versión | Enlace |
+| Dependencia | Versión | Enlace |
 |---|---|---|
 | NukkitPetteriM1Edition | Compatible con PM1E | [GitHub](https://github.com/PetteriM1/NukkitPetteriM1Edition) |
-| Java JDK | 25 | [Descargar](https://jdk.java.net/25/) |
 | FakeInventories | 1.1.8-PM1E-IWareQ | [GitHub](https://github.com/IWareQ/FakeInventories) |
 | FormConstructor | 3.1.0 | [GitHub](https://github.com/MEFRREEX/FormConstructor) |
-| EconomyAPI | 2.0.7 | [GitHub](https://github.com/onebone/EconomyAPI) |
+| EconomyAPI | 2.0.7 | [GitHub](https://github.com/CloudburstMC/EconomyAPI) |
 | LuckPerms | Versión compatible | [GitHub](https://github.com/LuckPerms/LuckPerms) |
 
 **Importante:** utiliza las versiones de las dependencias compatibles con las indicadas en el proyecto.
@@ -195,62 +226,13 @@ El controlador SQLite JDBC se integra en el JAR final mediante Maven Shade. No n
 
 1. Descarga AuctionHouseNK desde la sección [Releases](https://github.com/BrunoJaegerK/AuctionHouseNK/releases).
 2. Comprueba que las dependencias requeridas estén instaladas en el servidor.
-3. Coloca `AuctionHouse-<versión>.jar` dentro de la carpeta `plugins`.
-4. Inicia el servidor para que se genere la configuración y la base de datos.
-5. Revisa `plugins/AuctionHouse/config.yml`.
-6. Configura los límites y opciones según las necesidades de tu servidor.
-7. Reinicia el servidor y prueba `/ah`.
+3. Coloca el archivo `.jar` de AuctionHouseNK dentro de la carpeta `plugins`.
+4. Inicia el servidor para que se generen los archivos de configuración y la base de datos.
+5. Revisa los archivos de configuración generados.
+6. Personaliza `config.yml`, `messages.yml` y `menus.yml` según las necesidades de tu servidor.
+7. Reinicia el servidor y prueba el comando `/ah`.
 
-> Antes de actualizar, realiza una copia de seguridad de `config.yml` y `auctionhouse.db`.
-
-## 👨‍💻 Compilar desde el código fuente
-
-AuctionHouseNK utiliza **Maven** para gestionar las dependencias y generar el archivo JAR.
-
-### Requisitos de desarrollo
-
-- JDK 25.
-- IntelliJ IDEA u otro IDE compatible con Maven.
-- Maven.
-- `server.jar` de NukkitPetteriM1Edition.
-- FakeInventories 1.1.8-PM1E-IWareQ.
-- EconomyAPI 2.0.7.
-- FormConstructor 3.1.0.
-
-### Pasos
-
-**1. Clona el repositorio:**
-
-```bash
-git clone https://github.com/BrunoJaegerK/AuctionHouseNK.git
-```
-
-**2.** Abre el proyecto en IntelliJ IDEA como proyecto Maven y configura el JDK 25.
-
-**3.** Coloca las dependencias locales en la carpeta `libs`:
-
-```text
-libs/
-├── server.jar
-├── FakeInventories-1.1.8-PM1E-IWareQ.jar
-└── economyapi-2.0.7.jar
-```
-
-FormConstructor se obtiene mediante la dependencia Maven configurada en `pom.xml`.
-
-**4.** Ejecuta la compilación:
-
-```bash
-mvn clean package
-```
-
-**5.** Cuando Maven finalice correctamente, encontrarás el archivo generado en `target/`:
-
-```text
-AuctionHouse-<versión>.jar
-```
-
-Maven Shade incluye SQLite JDBC dentro del JAR final y conserva el registro del controlador JDBC.
+> Antes de actualizar, realiza una copia de seguridad de los archivos de configuración y de `auctionhouse.db`.
 
 ## 💾 Base de datos y almacenamiento
 
@@ -258,24 +240,7 @@ AuctionHouseNK utiliza **SQLite** para conservar la información de las publicac
 
 El sistema permite mantener los datos de las ofertas después de reiniciar el servidor.
 
-Los objetos se serializan para conservar sus características y permitir su recuperación.
-
-### 📦 Storage
-
-Cuando una publicación alcanza su fecha de vencimiento, sus objetos se procesan para que el propietario pueda recuperarlos mediante el sistema Storage.
-
-Esto permite conservar los artículos que ya no están disponibles en la casa de subastas.
-
-## 🧩 Tecnologías utilizadas
-
-- **Plataforma:** NukkitPetteriM1Edition.
-- **Lenguaje:** Java 25.
-- **Build:** Maven.
-- **Interfaz de inventarios:** FakeInventories.
-- **Formularios:** FormConstructor.
-- **Economía:** EconomyAPI.
-- **Base de datos:** SQLite.
-- **Permisos:** LuckPerms (opcional).
+Los objetos se serializan para conservar sus características y permitir su recuperación mediante Storage cuando corresponda.
 
 ## 🐛 Reportes y sugerencias
 
@@ -294,17 +259,16 @@ Al reportar un problema, incluye:
 
 ## 📜 Licencia
 
-Este proyecto está protegido bajo la
-[Apache License 2.0](LICENSE).
+Este proyecto está protegido bajo la [Apache License 2.0](LICENSE).
 
 Copyright © 2026 Bruno JaegerK.
 
 ---
 
 <p align="center">
-  <b>🔨 AuctionHouseNK</b>
+  **🔨 AuctionHouseNK**
 </p>
 
 <p align="center">
-  Este plugin fue creado con cariño para <b>DELUXEMINE NETWORK</b>.
+  Este plugin fue creado con cariño para **DELUXEMINE NETWORK**.
 </p>
