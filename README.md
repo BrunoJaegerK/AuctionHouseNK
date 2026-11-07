@@ -1,3 +1,4 @@
+
 # 🔨 AuctionHouseNK
 
 <p align="center">
@@ -54,9 +55,27 @@ AuctionHouseNK utiliza **FakeInventories** para ofrecer una experiencia de naveg
 
 Desde la interfaz los jugadores pueden consultar las publicaciones disponibles, navegar entre páginas y acceder a sus propias ofertas.
 
+<p align="center">
+  <img src="assets/Casadesubastas.png" alt="Interfaz principal de la casa de subastas" width="85%">
+</p>
+
+### 👤 Mis subastas
+
+Los jugadores pueden consultar sus propias publicaciones y revisar los artículos que tienen actualmente a la venta.
+
+<p align="center">
+  <img src="assets/Missubastas.png" alt="Interfaz de mis subastas" width="85%">
+</p>
+
+## 🛒 Sistema de compras
+
 El proceso de compra utiliza formularios de confirmación mediante **FormConstructor**.
 
-### 🛒 Sistema de compras
+Antes de completar una compra, el jugador puede revisar la confirmación de la operación.
+
+<p align="center">
+  <img src="assets/comprar.png" alt="Ventana de confirmación de compra" width="85%">
+</p>
 
 El proceso de compra incorpora medidas para proteger las transacciones:
 
@@ -71,6 +90,18 @@ El proceso de compra incorpora medidas para proteger las transacciones:
 Cuando una publicación alcanza su fecha de vencimiento, sus objetos se procesan para que el propietario pueda recuperarlos mediante el sistema Storage.
 
 Esto permite conservar los artículos que ya no están disponibles en la casa de subastas.
+
+<p align="center">
+  <img src="assets/Storage.png" alt="Interfaz de Storage" width="85%">
+</p>
+
+## 🧩 Conservación de datos de los objetos
+
+AuctionHouseNK incorpora un sistema de serialización para conservar los datos de los objetos almacenados.
+
+<p align="center">
+  <img src="assets/nbtitem.png" alt="Datos NBT de un objeto" width="85%">
+</p>
 
 ## 🔐 Sistema de límites por rango
 
@@ -272,3 +303,4 @@ Copyright © 2026 Bruno JaegerK.
 <p align="center">
   Este plugin fue creado con cariño para **DELUXEMINE NETWORK**.
 </p>
+
