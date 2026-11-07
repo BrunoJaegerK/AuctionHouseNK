@@ -77,7 +77,7 @@
             <systemPath>${project.basedir}/libs/economyapi-2.0.7.jar</systemPath>
         </dependency>
 
-        <!-- SQLite JDBC: se incluirá dentro del JAR final -->
+        <!-- SQLite JDBC aislado dentro del plugin -->
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
@@ -114,11 +114,11 @@
                 <version>3.4.2</version>
             </plugin>
 
-            <!-- Empaqueta SQLite JDBC dentro de AuctionHouse -->
+            <!-- Empaquetar y aislar SQLite JDBC -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.6.2</version>
 
                 <executions>
                     <execution>
@@ -140,12 +140,20 @@
                                 </excludes>
                             </artifactSet>
 
+                            <!-- Reubicar las clases SQLite -->
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.sqlite</pattern>
+                                    <shadedPattern>com.brunojaegerk.auctionhouse.libs.sqlite</shadedPattern>
+                                </relocation>
+                            </relocations>
+
                             <!-- Conservar el registro automático del controlador JDBC -->
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
 
-                            <!-- Eliminar firmas antiguas, conservando los recursos nativos -->
+                            <!-- Eliminar firmas antiguas -->
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
@@ -166,4 +174,5 @@
     </build>
 
 </project>
+
 
