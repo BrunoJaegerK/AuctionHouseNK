@@ -6,12 +6,15 @@ import cn.nukkit.item.Item;
 import cn.nukkit.plugin.PluginBase;
 import me.iwareq.fakeinventories.FakeInventory;
 
+import com.brunojaegerk.auctionhouse.Main;
 import com.brunojaegerk.auctionhouse.auction.AuctionMenu;
 import com.brunojaegerk.auctionhouse.auction.ItemSerializer;
+import com.brunojaegerk.auctionhouse.config.MessageManager;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 public final class StorageMenu {
 
@@ -23,6 +26,7 @@ public final class StorageMenu {
     private static final int NEXT_PAGE_SLOT = 50;
 
     private final PluginBase plugin;
+    private final MessageManager messageManager;
     private final PendingItemManager pendingItemManager;
     private final AuctionMenu auctionMenu;
 
@@ -32,6 +36,7 @@ public final class StorageMenu {
             AuctionMenu auctionMenu
     ) {
         this.plugin = plugin;
+        this.messageManager = ((Main) plugin).getMessageManager();
         this.pendingItemManager = pendingItemManager;
         this.auctionMenu = auctionMenu;
     }
@@ -69,7 +74,7 @@ public final class StorageMenu {
 
             FakeInventory inventory = new FakeInventory(
                     InventoryType.DOUBLE_CHEST,
-                    "§8Storage"
+                    messageManager.getMenu("storage.title")
             );
 
             inventory.setDefaultItemHandler(
@@ -87,10 +92,15 @@ public final class StorageMenu {
                     );
 
                     displayItem.setLore(
-                            "§7Almacenado: §f"
-                                    + pendingItem.getReason(),
+                            messageManager.getMenu(
+                                    "storage.item.reason",
+                                    Map.of(
+                                            "reason",
+                                            pendingItem.getReason()
+                                    )
+                            ),
                             "",
-                            "§aHaz clic para reclamar."
+                            messageManager.getMenu("storage.item.claim-hint")
                     );
 
                     long pendingId = pendingItem.getId();
@@ -123,22 +133,24 @@ public final class StorageMenu {
                 inventory.setItem(
                         22,
                         Item.get(130).setCustomName(
-                                "§7Tu Storage está vacío"
+                                messageManager.getMenu("storage.empty.title")
                         ).setLore(
-                                "§8Aquí aparecerán los objetos",
-                                "§8de publicaciones vencidas",
-                                "§8o canceladas."
+                                messageManager.getMenuList(
+                                        "storage.empty.lore"
+                                ).toArray(new String[0])
                         )
                 );
             }
 
             // Casilla 45: regresar al mercado.
             Item backButton = Item.get(54);
-            backButton.setCustomName("§aVolver al mercado");
+            backButton.setCustomName(
+                    messageManager.getMenu("storage.buttons.back")
+            );
             backButton.setLore(
-                    "§7Regresar a la casa de subastas.",
-                    "",
-                    "§eHaz clic para volver."
+                    messageManager.getMenuList(
+                            "storage.lore.back"
+                    ).toArray(new String[0])
             );
 
             inventory.setItem(BACK_SLOT, backButton, (item, event) -> {
@@ -165,14 +177,24 @@ public final class StorageMenu {
 
             // Casilla 49: información.
             Item infoButton = Item.get(339);
-            infoButton.setCustomName("§bInformación de Storage");
+            infoButton.setCustomName(
+                    messageManager.getMenu("storage.info.title")
+            );
             infoButton.setLore(
-                    "§7Objetos almacenados: §f" + items.size(),
-                    "§7Página: §f" + (currentPage + 1)
-                            + "§7/§f" + totalPages,
+                    messageManager.getMenu(
+                            "storage.info.items",
+                            Map.of("count", items.size())
+                    ),
+                    messageManager.getMenu(
+                            "storage.info.page",
+                            Map.of(
+                                    "page", currentPage + 1,
+                                    "pages", totalPages
+                            )
+                    ),
                     "",
-                    "§7Haz clic en un objeto para",
-                    "§7recuperarlo en tu inventario."
+                    messageManager.getMenu("storage.info.description-line-1"),
+                    messageManager.getMenu("storage.info.description-line-2")
             );
 
             inventory.setItem(PAGE_INFO_SLOT, infoButton);
@@ -180,9 +202,11 @@ public final class StorageMenu {
             // Casilla 48: página anterior.
             Item previousButton = Item.get(262);
             previousButton.setCustomName(
-                    currentPage > 0
-                            ? "§ePágina anterior"
-                            : "§8No hay página anterior"
+                    messageManager.getMenu(
+                            currentPage > 0
+                                    ? "storage.buttons.previous-page"
+                                    : "storage.buttons.no-previous-page"
+                    )
             );
 
             inventory.setItem(
@@ -207,9 +231,11 @@ public final class StorageMenu {
             // Casilla 50: página siguiente.
             Item nextButton = Item.get(262);
             nextButton.setCustomName(
-                    currentPage < totalPages - 1
-                            ? "§ePágina siguiente"
-                            : "§8No hay página siguiente"
+                    messageManager.getMenu(
+                            currentPage < totalPages - 1
+                                    ? "storage.buttons.next-page"
+                                    : "storage.buttons.no-next-page"
+                    )
             );
 
             inventory.setItem(
@@ -250,7 +276,7 @@ public final class StorageMenu {
             );
 
             player.sendMessage(
-                    "§cNo se pudo cargar tu Storage."
+                    messageManager.getChat("storage.load-error")
             );
         }
     }
@@ -293,7 +319,7 @@ public final class StorageMenu {
 
             if (pendingItem == null) {
                 player.sendMessage(
-                        "§cEste objeto ya no está disponible."
+                        messageManager.getChat("storage.item-unavailable")
                 );
                 return;
             }
@@ -304,7 +330,7 @@ public final class StorageMenu {
 
             if (!player.getInventory().canAddItem(item)) {
                 player.sendMessage(
-                        "§cNo tienes espacio suficiente en tu inventario."
+                        messageManager.getChat("storage.inventory-full")
                 );
                 return;
             }
@@ -313,7 +339,7 @@ public final class StorageMenu {
 
             if (leftovers != null && leftovers.length > 0) {
                 player.sendMessage(
-                        "§cNo se pudo entregar el objeto completamente."
+                        messageManager.getChat("storage.delivery-incomplete")
                 );
                 return;
             }
@@ -325,7 +351,7 @@ public final class StorageMenu {
             );
 
             player.sendMessage(
-                    "§aHas recuperado tu objeto correctamente."
+                    messageManager.getChat("storage.claim-success")
             );
 
             // Actualizar Storage después de cerrar la ventana actual.
@@ -350,7 +376,7 @@ public final class StorageMenu {
             );
 
             player.sendMessage(
-                    "§cNo se pudo recuperar este objeto."
+                    messageManager.getChat("storage.recovery-error")
             );
 
         } catch (SQLException exception) {
@@ -361,8 +387,7 @@ public final class StorageMenu {
             );
 
             player.sendMessage(
-                    "§cOcurrió un error al actualizar Storage. "
-                            + "Contacta con un administrador."
+                    messageManager.getChat("storage.update-error")
             );
         }
     }

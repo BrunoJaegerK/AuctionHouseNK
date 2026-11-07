@@ -1,3 +1,4 @@
+
 package com.brunojaegerk.auctionhouse.auction;
 
 import cn.nukkit.Player;
@@ -5,6 +6,8 @@ import cn.nukkit.inventory.InventoryType;
 import cn.nukkit.item.Item;
 import cn.nukkit.plugin.PluginBase;
 import me.iwareq.fakeinventories.FakeInventory;
+import com.brunojaegerk.auctionhouse.Main;
+import com.brunojaegerk.auctionhouse.config.MessageManager;
 import com.brunojaegerk.auctionhouse.storage.PendingItemManager;
 import com.brunojaegerk.auctionhouse.storage.StorageMenu;
 import com.formconstructor.form.ModalForm;
@@ -13,6 +16,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 public final class AuctionMenu {
@@ -25,6 +29,7 @@ public final class AuctionMenu {
     private static final int NEXT_PAGE_SLOT = 50;
 
     private final PluginBase plugin;
+    private final MessageManager messageManager;
     private final AuctionManager auctionManager;
     private final AuctionPurchaseService purchaseService;
     private final StorageMenu storageMenu;
@@ -36,6 +41,7 @@ public final class AuctionMenu {
             PendingItemManager pendingItemManager
     ) {
         this.plugin = plugin;
+        this.messageManager = ((Main) plugin).getMessageManager();
         this.auctionManager = auctionManager;
         this.purchaseService = purchaseService;
 
@@ -89,9 +95,11 @@ public final class AuctionMenu {
                     auctions.size()
             );
 
-            String title = ownAuctions
-                    ? "§8Mis subastas"
-                    : "§8Casa de subastas";
+            String title = messageManager.getMenu(
+                    ownAuctions
+                            ? "auction.my-auctions-title"
+                            : "auction.title"
+            );
 
             FakeInventory inventory = new FakeInventory(
                     InventoryType.DOUBLE_CHEST,
@@ -114,17 +122,31 @@ public final class AuctionMenu {
                     );
 
                     displayItem.setLore(
-                            "§7Vendedor: §f" + auction.getSellerName(),
-                            "§7Precio: §6$" + String.format(
-                                    Locale.US,
-                                    "%.2f",
-                                    auction.getPrice()
+                            messageManager.getMenu(
+                                    "auction.item.seller",
+                                    Map.of("seller", auction.getSellerName())
                             ),
-                            "§8ID de subasta: " + auction.getId(),
+                            messageManager.getMenu(
+                                    "auction.item.price",
+                                    Map.of(
+                                            "price",
+                                            String.format(
+                                                    Locale.US,
+                                                    "%.2f",
+                                                    auction.getPrice()
+                                            )
+                                    )
+                            ),
+                            messageManager.getMenu(
+                                    "auction.item.auction-id",
+                                    Map.of("id", auction.getId())
+                            ),
                             "",
-                            ownAuctions
-                                    ? "§7Esta es tu publicación."
-                                    : "§aHaz clic para comprar"
+                            messageManager.getMenu(
+                                    ownAuctions
+                                            ? "auction.item.own-listing"
+                                            : "auction.item.buy-hint"
+                            )
                     );
 
                     final long auctionId = auction.getId();
@@ -140,7 +162,9 @@ public final class AuctionMenu {
 
                         if (ownAuctions) {
                             buyer.sendMessage(
-                                    "§eEsta es tu propia subasta."
+                                    messageManager.getChat(
+                                            "auction.own-listing"
+                                    )
                             );
                             return;
                         }
@@ -173,9 +197,11 @@ public final class AuctionMenu {
                 inventory.setItem(
                         22,
                         Item.get(323).setCustomName(
-                                ownAuctions
-                                        ? "§cNo tienes subastas activas"
-                                        : "§cNo hay subastas activas"
+                                messageManager.getMenu(
+                                        ownAuctions
+                                                ? "auction.empty.own-auctions"
+                                                : "auction.empty.all-auctions"
+                                )
                         )
                 );
             }
@@ -184,17 +210,19 @@ public final class AuctionMenu {
             Item myAuctionsButton = Item.get(54);
 
             myAuctionsButton.setCustomName(
-                    ownAuctions
-                            ? "§eVolver a todas las subastas"
-                            : "§aMis subastas"
+                    messageManager.getMenu(
+                            ownAuctions
+                                    ? "auction.buttons.back-to-auctions"
+                                    : "auction.buttons.my-auctions"
+                    )
             );
 
             myAuctionsButton.setLore(
-                    ownAuctions
-                            ? "§7Regresar al mercado general."
-                            : "§7Ver tus publicaciones activas.",
-                    "",
-                    "§eHaz clic para abrir."
+                    messageManager.getMenuList(
+                            ownAuctions
+                                    ? "auction.lore.back-to-auctions"
+                                    : "auction.lore.my-auctions"
+                    ).toArray(new String[0])
             );
 
             inventory.setItem(
@@ -230,13 +258,14 @@ public final class AuctionMenu {
             // Casilla 46: Storage.
             Item storageButton = Item.get(130);
 
-            storageButton.setCustomName("§aStorage");
+            storageButton.setCustomName(
+                    messageManager.getMenu("auction.buttons.storage")
+            );
 
             storageButton.setLore(
-                    "§7Recupera objetos de publicaciones",
-                    "§7vencidas o canceladas.",
-                    "",
-                    "§eHaz clic para abrir."
+                    messageManager.getMenuList(
+                            "auction.lore.storage"
+                    ).toArray(new String[0])
             );
 
             inventory.setItem(46, storageButton, (item, event) -> {
@@ -264,19 +293,31 @@ public final class AuctionMenu {
             // Casilla 49: información.
             Item infoButton = Item.get(339);
             infoButton.setCustomName(
-                    ownAuctions
-                            ? "§bInformación de mis subastas"
-                            : "§bInformación de subastas"
+                    messageManager.getMenu(
+                            ownAuctions
+                                    ? "auction.info.my-auctions-title"
+                                    : "auction.info.auctions-title"
+                    )
             );
 
             infoButton.setLore(
-                    "§7Página: §f" + (currentPage + 1)
-                            + "§7/§f" + totalPages,
-                    "§7Publicaciones mostradas: §f" + auctions.size(),
+                    messageManager.getMenu(
+                            "auction.info.page",
+                            Map.of(
+                                    "page", currentPage + 1,
+                                    "pages", totalPages
+                            )
+                    ),
+                    messageManager.getMenu(
+                            "auction.info.listings",
+                            Map.of("count", auctions.size())
+                    ),
                     "",
-                    ownAuctions
-                            ? "§7Aquí aparecen tus publicaciones activas."
-                            : "§7Aquí aparecen las publicaciones activas."
+                    messageManager.getMenu(
+                            ownAuctions
+                                    ? "auction.info.my-auctions-description"
+                                    : "auction.info.auctions-description"
+                    )
             );
 
             inventory.setItem(PAGE_INFO_SLOT, infoButton, (item, event) -> {
@@ -288,13 +329,23 @@ public final class AuctionMenu {
                     return;
                 }
 
-                clicker.sendMessage("§6§lCasa de subastas");
                 clicker.sendMessage(
-                        "§7Página: §f" + (currentPage + 1)
-                                + "§7/§f" + totalPages
+                        messageManager.getChat("auction.info.chat-title")
                 );
                 clicker.sendMessage(
-                        "§7Publicaciones activas: §f" + auctions.size()
+                        messageManager.getChat(
+                                "auction.info.chat-page",
+                                Map.of(
+                                        "page", currentPage + 1,
+                                        "pages", totalPages
+                                )
+                        )
+                );
+                clicker.sendMessage(
+                        messageManager.getChat(
+                                "auction.info.chat-listings",
+                                Map.of("count", auctions.size())
+                        )
                 );
             });
 
@@ -302,9 +353,11 @@ public final class AuctionMenu {
             Item previousButton = Item.get(262);
 
             previousButton.setCustomName(
-                    currentPage > 0
-                            ? "§ePágina anterior"
-                            : "§8No hay página anterior"
+                    messageManager.getMenu(
+                            currentPage > 0
+                                    ? "auction.buttons.previous-page"
+                                    : "auction.buttons.no-previous-page"
+                    )
             );
 
             inventory.setItem(
@@ -330,9 +383,11 @@ public final class AuctionMenu {
             Item nextButton = Item.get(262);
 
             nextButton.setCustomName(
-                    currentPage < totalPages - 1
-                            ? "§ePágina siguiente"
-                            : "§8No hay página siguiente"
+                    messageManager.getMenu(
+                            currentPage < totalPages - 1
+                                    ? "auction.buttons.next-page"
+                                    : "auction.buttons.no-next-page"
+                    )
             );
 
             inventory.setItem(
@@ -374,7 +429,7 @@ public final class AuctionMenu {
             );
 
             player.sendMessage(
-                    "§cNo se pudieron cargar las subastas."
+                    messageManager.getChat("auction.load-error")
             );
         }
     }
@@ -401,7 +456,9 @@ public final class AuctionMenu {
             );
 
             buyer.sendMessage(
-                    "§cNo se pudo mostrar la información de la compra."
+                    messageManager.getChat(
+                            "auction.purchase.display-error"
+                    )
             );
             return;
         }
@@ -412,20 +469,27 @@ public final class AuctionMenu {
                 auction.getPrice()
         );
 
-        String content =
-                "§fObjeto: §b" + item.getName() + "\n\n"
-                        + "§fCantidad: §b" + item.getCount() + "\n\n"
-                        + "§fVendedor: §b" + auction.getSellerName() + "\n\n"
-                        + "§fPrecio: §6$" + price + "\n\n"
-                        + "§7¿Deseas confirmar esta compra?";
+        String content = messageManager.getMenu(
+                "purchase.content",
+                Map.of(
+                        "item", item.getName(),
+                        "amount", item.getCount(),
+                        "seller", auction.getSellerName(),
+                        "price", price
+                )
+        );
 
         ModalForm form = new ModalForm(
-                "§8Confirmar compra",
+                messageManager.getMenu("purchase.title"),
                 content
         );
 
-        form.setPositiveButton("§aConfirmar");
-        form.setNegativeButton("§cCancelar");
+        form.setPositiveButton(
+                messageManager.getMenu("purchase.confirm")
+        );
+        form.setNegativeButton(
+                messageManager.getMenu("purchase.cancel")
+        );
 
         form.setHandler((player, response) -> {
 
@@ -435,7 +499,9 @@ public final class AuctionMenu {
 
             if (response) {
                 player.sendMessage(
-                        "§eProcesando tu compra..."
+                        messageManager.getChat(
+                                "auction.purchase.processing"
+                        )
                 );
 
                 purchaseService.purchase(
@@ -445,7 +511,9 @@ public final class AuctionMenu {
 
             } else {
                 player.sendMessage(
-                        "§cHas cancelado la compra."
+                        messageManager.getChat(
+                                "auction.purchase.cancelled"
+                        )
                 );
             }
         });
@@ -453,5 +521,6 @@ public final class AuctionMenu {
         form.send(buyer);
     }
 }
+
 
 

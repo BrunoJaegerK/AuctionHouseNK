@@ -1,0 +1,101 @@
+auction:
+  title: "&8Casa de subastas"
+  my-auctions-title: "&8Mis subastas"
+
+  own-listing: "&eEsta es tu propia subasta."
+  load-error: "&cNo se pudieron cargar las subastas."
+
+  item:
+    seller: "&7Vendedor: &f{seller}"
+    price: "&7Precio: &6${price}"
+    auction-id: "&8ID de subasta: {id}"
+    own-listing: "&7Esta es tu publicación."
+    buy-hint: "&aHaz clic para comprar"
+
+  empty:
+    own-auctions: "&cNo tienes subastas activas"
+    all-auctions: "&cNo hay subastas activas"
+
+  buttons:
+    my-auctions: "&aMis subastas"
+    back-to-auctions: "&eVolver a todas las subastas"
+    storage: "&aStorage"
+    previous-page: "&ePágina anterior"
+    no-previous-page: "&8No hay página anterior"
+    next-page: "&ePágina siguiente"
+    no-next-page: "&8No hay página siguiente"
+
+  lore:
+    my-auctions:
+      - "&7Ver tus publicaciones activas."
+      - ""
+      - "&eHaz clic para abrir."
+    back-to-auctions:
+      - "&7Regresar al mercado general."
+      - ""
+      - "&eHaz clic para abrir."
+    storage:
+      - "&7Recupera objetos de publicaciones"
+      - "&7vencidas o canceladas."
+      - ""
+      - "&eHaz clic para abrir."
+
+  info:
+    my-auctions-title: "&bInformación de mis subastas"
+    auctions-title: "&bInformación de subastas"
+    page: "&7Página: &f{page}&7/&f{pages}"
+    listings: "&7Publicaciones mostradas: &f{count}"
+    my-auctions-description: "&7Aquí aparecen tus publicaciones activas."
+    auctions-description: "&7Aquí aparecen las publicaciones activas."
+
+    chat-title: "&6&lCasa de subastas"
+    chat-page: "&7Página: &f{page}&7/&f{pages}"
+    chat-listings: "&7Publicaciones activas: &f{count}"
+
+  purchase:
+    display-error: "&cNo se pudo mostrar la información de la compra."
+
+purchase:
+  title: "&8Confirmar compra"
+  content: "&fObjeto: &b{item}\n\n&fCantidad: &b{amount}\n\n&fVendedor: &b{seller}\n\n&fPrecio: &6${price}\n\n&7¿Deseas confirmar esta compra?"
+  confirm: "&aConfirmar"
+  cancel: "&cCancelar"
+
+# Mensajes enviados al jugador desde AuctionMenu.
+# Se mantienen separados de los textos de las interfaces.
+
+
+storage:
+  title: "&8Storage"
+
+  item:
+    reason: "&7Almacenado: &f{reason}"
+    claim-hint: "&aHaz clic para reclamar."
+
+  empty:
+    title: "&7Tu Storage está vacío"
+    lore:
+      - "&8Aquí aparecerán los objetos"
+      - "&8de publicaciones vencidas"
+      - "&8o canceladas."
+
+  buttons:
+    back: "&aVolver al mercado"
+    previous-page: "&ePágina anterior"
+    no-previous-page: "&8No hay página anterior"
+    next-page: "&ePágina siguiente"
+    no-next-page: "&8No hay página siguiente"
+
+  lore:
+    back:
+      - "&7Regresar a la casa de subastas."
+      - ""
+      - "&eHaz clic para volver."
+
+  info:
+    title: "&bInformación de Storage"
+    items: "&7Objetos almacenados: &f{count}"
+    page: "&7Página: &f{page}&7/&f{pages}"
+    description-line-1: "&7Haz clic en un objeto para"
+    description-line-2: "&7recuperarlo en tu inventario."
+

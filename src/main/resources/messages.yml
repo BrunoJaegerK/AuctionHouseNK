@@ -1,23 +1,85 @@
-prefix: "§8[§6AuctionHouse§8] §r"
+prefix: "&8[&6AuctionHouse&8] &r"
 
 general:
-  no-permission: "§cNo tienes permiso para realizar esta acción."
-  player-only: "§cEste comando solo puede utilizarse dentro del juego."
-  error: "§cHa ocurrido un error. Inténtalo de nuevo."
-  reloaded: "§aLa configuración se ha recargado correctamente."
+  no-permission: "&cNo tienes permiso para realizar esta acción."
+  player-only: "&cEste comando solo puede utilizarse dentro del juego."
+  error: "&cHa ocurrido un error. Inténtalo de nuevo."
+  reloaded: "&aLa configuración se ha recargado correctamente."
 
 auction:
-  opening: "§eAbriendo la casa de subastas..."
-  not-found: "§cNo se encontró esa publicación."
-  invalid-price: "§cIntroduce un precio válido."
-  price-too-low: "§cEl precio está por debajo del mínimo permitido."
-  price-too-high: "§cEl precio supera el máximo permitido."
-  inventory-full: "§cNo tienes suficiente espacio en el inventario."
-  listing-created: "§aTu objeto se ha publicado correctamente."
-  listing-limit: "§cHas alcanzado el límite de publicaciones."
-  self-purchase: "§cNo puedes comprar tu propia publicación."
+  opening: "&eAbriendo la casa de subastas..."
+  not-found: "&cNo se encontró esa publicación."
+  invalid-price: "&cEl precio debe ser un número válido."
+  price-not-positive: "&cEl precio debe ser positivo."
+  price-range: "&cEl precio debe estar entre {min} y {max}."
+  inventory-full: "&cNo tienes suficiente espacio en el inventario."
+  listing-created: "&a¡Publicación creada correctamente!"
+  listing-id: "&7ID: &f#{id}"
+  listing-price: "&7Precio de la pila: &a{price}"
+  listing-duration: "&7Duración: &f{hours} horas"
+  listing-limit: "&cHas alcanzado tu límite de {limit} publicaciones activas."
+  self-purchase: "&cNo puedes comprar tu propia publicación."
+  own-listing: "&eEsta es tu propia subasta."
+  load-error: "&cNo se pudieron cargar las subastas."
+
+  command:
+    no-permission: "&cNo tienes permiso para usar este comando."
+    test-no-permission: "&cNo tienes permiso para usar esta prueba."
+    sell-no-permission: "&cNo tienes permiso para publicar objetos."
+    sell-usage: "&cUso correcto: /ah sell <precio>"
+    unavailable: "&cLa casa de subastas no está disponible."
+    service-unavailable: "&cEl servicio de subastas no está disponible."
+
+  test:
+    no-item: "&cDebes tener un objeto en la mano."
+    success: "&aPrueba correcta: el objeto se conserva."
+    item: "&7Objeto: {item}"
+    amount: "&7Cantidad: {amount}"
+    nbt: "&7Datos NBT: &aidénticos"
+    failed: "&cLa prueba falló: los datos no coinciden."
+    serialization-error: "&cError al probar la serialización. Revisa la consola."
+
+  listing:
+    duration-misconfigured: "&cLa duración de las publicaciones está mal configurada."
+    error: "&cNo se pudo completar la publicación. Contacta con un administrador si el objeto no aparece en tu inventario."
+    unexpected-error: "&cOcurrió un error al publicar el objeto. Si desapareció de tu inventario, contacta con un administrador."
+
+  info:
+    chat-title: "&6&lCasa de subastas"
+    chat-page: "&7Página: &f{page}&7/&f{pages}"
+    chat-listings: "&7Publicaciones activas: &f{count}"
+
+  purchase:
+    display-error: "&cNo se pudo mostrar la información de la compra."
+    processing: "&eProcesando tu compra..."
+    cancelled: "&cHas cancelado la compra."
+    unavailable: "&cEsta subasta ya no está disponible."
+    own-auction: "&cNo puedes comprar tu propia subasta."
+    invalid-price: "&cEl precio de esta subasta no es válido."
+    invalid-item: "&cNo se pudo validar el artículo."
+    inventory-full: "&cNo tienes espacio suficiente en tu inventario."
+    account-error: "&cNo se pudo verificar la cuenta económica del comprador o vendedor."
+    already-processing: "&cOtro jugador está comprando esta subasta o ya no está disponible."
+    reservation-unavailable: "&cLa subasta dejó de estar disponible."
+    charge-failed: "&cNo se pudo realizar el cobro. Verifica tu saldo e inténtalo de nuevo."
+    delivery-failed: "&cNo se pudo entregar el artículo. Se intentará devolver el cobro."
+    seller-payment-failed: "&cNo se pudo completar el pago al vendedor. Se intentará revertir la compra."
+    confirmation-failed: "&cNo se pudo confirmar la venta en la base de datos. Se intentará revertir la compra."
+    processing-error: "&cOcurrió un error al procesar la compra. Se intentará revertir la operación."
+    success: "&aHas comprado el artículo de la subasta &e#{id}&a por &e{price}&a."
+    refund-failed: "&cAtención: no se pudo devolver el cobro automáticamente. Contacta con un administrador."
 
 economy:
-  insufficient-funds: "§cNo tienes dinero suficiente."
-  purchase-success: "§aCompra realizada correctamente."
-  seller-payment-error: "§cNo se pudo completar el pago. La operación requiere revisión."
+  insufficient-funds: "&cNo tienes dinero suficiente."
+  purchase-success: "&aCompra realizada correctamente."
+  seller-payment-error: "&cNo se pudo completar el pago. La operación requiere revisión."
+
+storage:
+  load-error: "&cNo se pudo cargar tu Storage."
+  item-unavailable: "&cEste objeto ya no está disponible."
+  inventory-full: "&cNo tienes espacio suficiente en tu inventario."
+  delivery-incomplete: "&cNo se pudo entregar el objeto completamente."
+  claim-success: "&aHas recuperado tu objeto correctamente."
+  recovery-error: "&cNo se pudo recuperar este objeto."
+  update-error: "&cOcurrió un error al actualizar Storage. Contacta con un administrador."
+

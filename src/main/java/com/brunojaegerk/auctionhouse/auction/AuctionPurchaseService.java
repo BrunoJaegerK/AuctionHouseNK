@@ -5,18 +5,27 @@ import cn.nukkit.inventory.PlayerInventory;
 import cn.nukkit.item.Item;
 import me.onebone.economyapi.EconomyAPI;
 
+import com.brunojaegerk.auctionhouse.Main;
+import com.brunojaegerk.auctionhouse.config.MessageManager;
+
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.UUID;
 
 public class AuctionPurchaseService {
 
     private final AuctionManager auctionManager;
     private final EconomyAPI economy;
+    private final MessageManager messageManager;
 
-    public AuctionPurchaseService(AuctionManager auctionManager) {
+    public AuctionPurchaseService(
+            AuctionManager auctionManager,
+            MessageManager messageManager
+    ) {
         this.auctionManager = auctionManager;
         this.economy = EconomyAPI.getInstance();
+        this.messageManager = messageManager;
     }
 
     public boolean hasInventorySpace(PlayerInventory inventory, Item item) {
@@ -92,20 +101,26 @@ public class AuctionPurchaseService {
 
             if (auction == null || !auction.isActive()
                     || auction.isExpired(System.currentTimeMillis())) {
-                buyer.sendMessage("§cEsta subasta ya no está disponible.");
+                buyer.sendMessage(
+                        messageManager.getChat("auction.purchase.unavailable")
+                );
                 return;
             }
 
             UUID sellerUUID = auction.getSellerUUID();
 
             if (buyerUUID.equals(sellerUUID)) {
-                buyer.sendMessage("§cNo puedes comprar tu propia subasta.");
+                buyer.sendMessage(
+                        messageManager.getChat("auction.purchase.own-auction")
+                );
                 return;
             }
 
             if (!Double.isFinite(auction.getPrice())
                     || auction.getPrice() <= 0) {
-                buyer.sendMessage("§cEl precio de esta subasta no es válido.");
+                buyer.sendMessage(
+                        messageManager.getChat("auction.purchase.invalid-price")
+                );
                 return;
             }
 
@@ -113,13 +128,15 @@ public class AuctionPurchaseService {
 
             if (item == null || item.getId() == 0
                     || item.getCount() <= 0) {
-                buyer.sendMessage("§cNo se pudo validar el artículo.");
+                buyer.sendMessage(
+                        messageManager.getChat("auction.purchase.invalid-item")
+                );
                 return;
             }
 
             if (!hasInventorySpace(inventory, item)) {
                 buyer.sendMessage(
-                        "§cNo tienes espacio suficiente en tu inventario."
+                        messageManager.getChat("auction.purchase.inventory-full")
                 );
                 return;
             }
@@ -127,7 +144,7 @@ public class AuctionPurchaseService {
             if (!economy.hasAccount(buyerUUID)
                     || !economy.hasAccount(sellerUUID)) {
                 buyer.sendMessage(
-                        "§cNo se pudo verificar la cuenta económica del comprador o vendedor."
+                        messageManager.getChat("auction.purchase.account-error")
                 );
                 return;
             }
@@ -135,8 +152,7 @@ public class AuctionPurchaseService {
             // Reserva atómica: solo un comprador puede obtenerla.
             if (!auctionManager.reservePurchase(auctionId)) {
                 buyer.sendMessage(
-                        "§cOtro jugador está comprando esta subasta "
-                                + "o ya no está disponible."
+                        messageManager.getChat("auction.purchase.already-processing")
                 );
                 return;
             }
@@ -149,7 +165,7 @@ public class AuctionPurchaseService {
                     || auction.getStatus() != Auction.Status.PURCHASE_PENDING
                     || auction.isExpired(System.currentTimeMillis())) {
                 buyer.sendMessage(
-                        "§cLa subasta dejó de estar disponible."
+                        messageManager.getChat("auction.purchase.reservation-unavailable")
                 );
                 return;
             }
@@ -159,7 +175,7 @@ public class AuctionPurchaseService {
 
             if (!hasInventorySpace(inventory, item)) {
                 buyer.sendMessage(
-                        "§cNo tienes espacio suficiente en tu inventario."
+                        messageManager.getChat("auction.purchase.inventory-full")
                 );
                 return;
             }
@@ -171,8 +187,7 @@ public class AuctionPurchaseService {
 
             if (debitResult != EconomyAPI.RET_SUCCESS) {
                 buyer.sendMessage(
-                        "§cNo se pudo realizar el cobro. "
-                                + "Verifica tu saldo e inténtalo de nuevo."
+                        messageManager.getChat("auction.purchase.charge-failed")
                 );
                 return;
             }
@@ -183,8 +198,7 @@ public class AuctionPurchaseService {
 
             if (!delivered) {
                 buyer.sendMessage(
-                        "§cNo se pudo entregar el artículo. "
-                                + "Se intentará devolver el cobro."
+                        messageManager.getChat("auction.purchase.delivery-failed")
                 );
                 return;
             }
@@ -196,8 +210,7 @@ public class AuctionPurchaseService {
 
             if (creditResult != EconomyAPI.RET_SUCCESS) {
                 buyer.sendMessage(
-                        "§cNo se pudo completar el pago al vendedor. "
-                                + "Se intentará revertir la compra."
+                        messageManager.getChat("auction.purchase.seller-payment-failed")
                 );
                 return;
             }
@@ -206,8 +219,7 @@ public class AuctionPurchaseService {
             // Confirma la venta únicamente después de las operaciones previas.
             if (!auctionManager.completePurchase(auctionId)) {
                 buyer.sendMessage(
-                        "§cNo se pudo confirmar la venta en la base de datos. "
-                                + "Se intentará revertir la compra."
+                        messageManager.getChat("auction.purchase.confirmation-failed")
                 );
                 return;
             }
@@ -219,18 +231,24 @@ public class AuctionPurchaseService {
             sellerPaid = false;
 
             buyer.sendMessage(
-                    "§aHas comprado el artículo de la subasta §e#"
-                            + auctionId + "§a por §e"
-                            + String.format(java.util.Locale.US, "%.2f",
-                            auction.getPrice()) + "§a."
+                    messageManager.getChat(
+                            "auction.purchase.success",
+                            Map.of(
+                                    "id", auctionId,
+                                    "price", String.format(
+                                            java.util.Locale.US,
+                                            "%.2f",
+                                            auction.getPrice()
+                                    )
+                            )
+                    )
             );
 
             return;
 
         } catch (SQLException | IOException exception) {
             buyer.sendMessage(
-                    "§cOcurrió un error al procesar la compra. "
-                            + "Se intentará revertir la operación."
+                    messageManager.getChat("auction.purchase.processing-error")
             );
             exception.printStackTrace();
 
@@ -275,8 +293,9 @@ public class AuctionPurchaseService {
                                         + auctionId
                         );
                         buyer.sendMessage(
-                                "§cAtención: no se pudo devolver el cobro "
-                                        + "automáticamente. Contacta con un administrador."
+                                messageManager.getChat(
+                                        "auction.purchase.refund-failed"
+                                )
                         );
                     }
                 }

@@ -1,3 +1,4 @@
+
 package com.brunojaegerk.auctionhouse;
 
 import cn.nukkit.Player;
@@ -14,10 +15,12 @@ import com.brunojaegerk.auctionhouse.auction.ItemSerializer;
 import com.brunojaegerk.auctionhouse.storage.DatabaseManager;
 import com.brunojaegerk.auctionhouse.storage.PendingItemManager;
 import com.brunojaegerk.auctionhouse.auction.ListingLimitManager;
+import com.brunojaegerk.auctionhouse.config.MessageManager;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Map;
 
 public class Main extends PluginBase {
 
@@ -28,6 +31,7 @@ public class Main extends PluginBase {
     private AuctionMenu auctionMenu;
     private AuctionPurchaseService auctionPurchaseService;
     private ListingLimitManager listingLimitManager;
+    private MessageManager messageManager;
 
     @Override
     public void onEnable() {
@@ -35,6 +39,7 @@ public class Main extends PluginBase {
 
         databaseManager = new DatabaseManager(this);
         listingLimitManager = new ListingLimitManager(this);
+        messageManager = new MessageManager(this);
 
         try {
             databaseManager.initialize();
@@ -44,7 +49,7 @@ public class Main extends PluginBase {
             pendingItemManager = new PendingItemManager(databaseManager);
 
             auctionPurchaseService =
-                    new AuctionPurchaseService(auctionManager);
+                    new AuctionPurchaseService(auctionManager, messageManager);
 
             auctionMenu = new AuctionMenu(
                     this,
@@ -134,6 +139,10 @@ public class Main extends PluginBase {
         return auctionPurchaseService;
     }
 
+    public MessageManager getMessageManager() {
+        return messageManager;
+    }
+
     @Override
     public boolean onCommand(
             CommandSender sender,
@@ -147,14 +156,14 @@ public class Main extends PluginBase {
 
         if (!sender.hasPermission("auctionhouse.use")) {
             sender.sendMessage(
-                    "§cNo tienes permiso para usar este comando."
+                    messageManager.getChat("auction.command.no-permission")
             );
             return true;
         }
 
         if (!(sender instanceof Player)) {
             sender.sendMessage(
-                    "§cEste comando solo puede utilizarse dentro del juego."
+                    messageManager.getChat("general.player-only")
             );
             return true;
         }
@@ -166,7 +175,7 @@ public class Main extends PluginBase {
 
             if (!player.hasPermission("auctionhouse.admin")) {
                 player.sendMessage(
-                        "§cNo tienes permiso para usar esta prueba."
+                        messageManager.getChat("auction.command.test-no-permission")
                 );
                 return true;
             }
@@ -180,7 +189,7 @@ public class Main extends PluginBase {
 
             if (!player.hasPermission("auctionhouse.sell")) {
                 player.sendMessage(
-                        "§cNo tienes permiso para publicar objetos."
+                        messageManager.getChat("auction.command.sell-no-permission")
                 );
                 return true;
             }
@@ -191,13 +200,15 @@ public class Main extends PluginBase {
 
         if (args.length > 0
                 && args[0].equalsIgnoreCase("sell")) {
-            player.sendMessage("§cUso correcto: /ah sell <precio>");
+            player.sendMessage(
+                    messageManager.getChat("auction.command.sell-usage")
+            );
             return true;
         }
 
         if (auctionMenu == null) {
             player.sendMessage(
-                    "§cLa casa de subastas no está disponible."
+                    messageManager.getChat("auction.command.unavailable")
             );
             return true;
         }
@@ -211,7 +222,7 @@ public class Main extends PluginBase {
 
         if (original == null || original.isNull()) {
             player.sendMessage(
-                    "§cDebes tener un objeto en la mano."
+                    messageManager.getChat("auction.test.no-item")
             );
             return;
         }
@@ -236,20 +247,26 @@ public class Main extends PluginBase {
 
             if (sameId && sameDamage && sameCount && sameNbt) {
                 player.sendMessage(
-                        "§aPrueba correcta: el objeto se conserva."
+                        messageManager.getChat("auction.test.success")
                 );
                 player.sendMessage(
-                        "§7Objeto: " + original.getName()
+                        messageManager.getChat(
+                                "auction.test.item",
+                                Map.of("item", original.getName())
+                        )
                 );
                 player.sendMessage(
-                        "§7Cantidad: " + original.getCount()
+                        messageManager.getChat(
+                                "auction.test.amount",
+                                Map.of("amount", original.getCount())
+                        )
                 );
                 player.sendMessage(
-                        "§7Datos NBT: §aidénticos"
+                        messageManager.getChat("auction.test.nbt")
                 );
             } else {
                 player.sendMessage(
-                        "§cLa prueba falló: los datos no coinciden."
+                        messageManager.getChat("auction.test.failed")
                 );
 
                 getLogger().warning(
@@ -260,8 +277,7 @@ public class Main extends PluginBase {
 
         } catch (IOException | IllegalArgumentException exception) {
             player.sendMessage(
-                    "§cError al probar la serialización. "
-                            + "Revisa la consola."
+                    messageManager.getChat("auction.test.serialization-error")
             );
 
             getLogger().error(
@@ -281,14 +297,14 @@ public class Main extends PluginBase {
             price = Double.parseDouble(priceArgument);
         } catch (NumberFormatException exception) {
             player.sendMessage(
-                    "§cEl precio debe ser un número válido."
+                    messageManager.getChat("auction.invalid-price")
             );
             return;
         }
 
         if (!Double.isFinite(price) || price <= 0) {
             player.sendMessage(
-                    "§cEl precio debe ser positivo."
+                    messageManager.getChat("auction.price-not-positive")
             );
             return;
         }
@@ -305,8 +321,13 @@ public class Main extends PluginBase {
 
         if (price < minPrice || price > maxPrice) {
             player.sendMessage(
-                    "§cEl precio debe estar entre "
-                            + minPrice + " y " + maxPrice + "."
+                    messageManager.getChat(
+                            "auction.price-range",
+                            Map.of(
+                                    "min", minPrice,
+                                    "max", maxPrice
+                            )
+                    )
             );
             return;
         }
@@ -315,7 +336,7 @@ public class Main extends PluginBase {
 
         if (auctionManager == null || auctionService == null) {
             player.sendMessage(
-                    "§cEl servicio de subastas no está disponible."
+                    messageManager.getChat("auction.command.service-unavailable")
             );
             return;
         }
@@ -327,9 +348,10 @@ public class Main extends PluginBase {
 
             if (maxListings > 0 && currentListings >= maxListings) {
                 player.sendMessage(
-                        "§cHas alcanzado tu límite de "
-                                + maxListings
-                                + " publicaciones activas."
+                        messageManager.getChat(
+                                "auction.listing-limit",
+                                Map.of("limit", maxListings)
+                        )
                 );
                 return;
             }
@@ -342,7 +364,9 @@ public class Main extends PluginBase {
             if (durationHours <= 0
                     || durationHours > Long.MAX_VALUE / 3600000L) {
                 player.sendMessage(
-                        "§cLa duración de las publicaciones está mal configurada."
+                        messageManager.getChat(
+                                "auction.listing.duration-misconfigured"
+                        )
                 );
                 return;
             }
@@ -356,16 +380,25 @@ public class Main extends PluginBase {
             );
 
             player.sendMessage(
-                    "§a¡Publicación creada correctamente!"
+                    messageManager.getChat("auction.listing-created")
             );
             player.sendMessage(
-                    "§7ID: §f#" + listingId
+                    messageManager.getChat(
+                            "auction.listing-id",
+                            Map.of("id", listingId)
+                    )
             );
             player.sendMessage(
-                    "§7Precio de la pila: §a" + price
+                    messageManager.getChat(
+                            "auction.listing-price",
+                            Map.of("price", price)
+                    )
             );
             player.sendMessage(
-                    "§7Duración: §f" + durationHours + " horas"
+                    messageManager.getChat(
+                            "auction.listing-duration",
+                            Map.of("hours", durationHours)
+                    )
             );
 
         } catch (SQLException | IOException exception) {
@@ -376,9 +409,7 @@ public class Main extends PluginBase {
             );
 
             player.sendMessage(
-                    "§cNo se pudo completar la publicación. "
-                            + "Contacta con un administrador si el objeto "
-                            + "no aparece en tu inventario."
+                    messageManager.getChat("auction.listing.error")
             );
 
         } catch (RuntimeException exception) {
@@ -389,11 +420,10 @@ public class Main extends PluginBase {
             );
 
             player.sendMessage(
-                    "§cOcurrió un error al publicar el objeto. "
-                            + "Si desapareció de tu inventario, "
-                            + "contacta con un administrador."
+                    messageManager.getChat("auction.listing.unexpected-error")
             );
         }
     }
 }
+
 
