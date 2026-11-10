@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/Minecraft-Bedrock%20Edition-43A047?style=for-the-badge&logo=minecraft&logoColor=white" alt="Minecraft Bedrock Edition">
   <img src="https://img.shields.io/badge/Server-NukkitPetteriM1Edition-2196F3?style=for-the-badge" alt="NukkitPetteriM1Edition">
   <img src="https://img.shields.io/badge/Java-25-orange?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 25">
-  <img src="https://img.shields.io/badge/Database-SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite">
+  <img src="https://img.shields.io/badge/Database-H2-1E88E5?style=for-the-badge" alt="H2 Database">
 </p>
 
 <p align="center">
@@ -20,7 +20,7 @@
 
 Permite a los jugadores publicar objetos a la venta, consultar las ofertas disponibles, comprar artículos de otros jugadores y recuperar sus objetos cuando una publicación vence.
 
-El objetivo es ofrecer un sistema de comercio entre jugadores con interfaces gráficas, protección durante las transacciones, límites de publicaciones por rango y almacenamiento persistente mediante SQLite.
+El objetivo es ofrecer un sistema de comercio entre jugadores con interfaces gráficas, protección durante las transacciones, límites de publicaciones por rango y almacenamiento persistente mediante H2.
 
 ## ✨ Características principales
 
@@ -36,7 +36,8 @@ El objetivo es ofrecer un sistema de comercio entre jugadores con interfaces gr�
 - 📦 **Storage:** conserva los objetos de publicaciones vencidas para que sus propietarios puedan recuperarlos.
 - 🔐 **Límites por rango:** configura distintas cantidades de publicaciones mediante permisos.
 - ♾️ **Publicaciones ilimitadas:** permite configurar límites ilimitados para determinados rangos.
-- 💾 **Base de datos SQLite:** conserva las publicaciones y sus datos después de reiniciar el servidor.
+- 💾 **Base de datos H2:** almacenamiento persistente de publicaciones y datos de las subastas.
+- 🔒 **H2 integrado y aislado:** incluye su propio controlador dentro del JAR para evitar conflictos con otros plugins.
 - 🧩 **Serialización de objetos:** conserva los datos de los artículos almacenados.
 - 📝 **Mensajes editables:** permite personalizar los mensajes del chat y los textos de las interfaces sin modificar el código fuente.
 
@@ -157,8 +158,8 @@ auction:
   max-price: 1000000000.0
 
 storage:
-  type: SQLITE
-  database: auctionhouse.db
+  type: H2
+  database: auctionhouse
 ```
 
 ### 📚 Opciones de configuración
@@ -172,7 +173,7 @@ storage:
 | `min-price` | Establece el precio mínimo de publicación. |
 | `max-price` | Establece el precio máximo de publicación. |
 | `storage.type` | Define el tipo de almacenamiento. |
-| `storage.database` | Define el nombre del archivo SQLite. |
+| `storage.database` | Define el nombre de la base de datos H2. |
 
 ### 🏷️ Añadir nuevos rangos
 
@@ -251,7 +252,7 @@ Permite personalizar los textos visibles en los inventarios personalizados y for
 
 **Importante:** utiliza las versiones de las dependencias compatibles con las indicadas en el proyecto.
 
-El controlador SQLite JDBC se integra en el JAR final mediante Maven Shade. No necesitas instalar SQLite JDBC como plugin independiente.
+El motor de base de datos H2 se integra directamente en el JAR final mediante Maven Shade y utiliza un paquete aislado para evitar conflictos con otras dependencias del servidor. No necesitas instalar H2 por separado.
 
 ### 📦 Instalación en el servidor
 
@@ -267,11 +268,17 @@ El controlador SQLite JDBC se integra en el JAR final mediante Maven Shade. No n
 
 ## 💾 Base de datos y almacenamiento
 
-AuctionHouseNK utiliza **SQLite** para conservar la información de las publicaciones.
+AuctionHouseNK utiliza **H2 Database** para almacenar de forma persistente la información de las publicaciones.
 
-El sistema permite mantener los datos de las ofertas después de reiniciar el servidor.
+- 💾 Guarda las publicaciones y sus datos.
+- 🔄 Conserva la información después de reiniciar el servidor.
+- 📦 Almacena los objetos serializados para mantener sus características.
+- 🔒 Utiliza un motor H2 integrado y aislado dentro del plugin.
+- ⚙️ No requiere instalar una base de datos externa.
 
-Los objetos se serializan para conservar sus características y permitir su recuperación mediante Storage cuando corresponda.
+La base de datos se genera automáticamente en la carpeta de datos del plugin con el nombre `auctionhouse.mv.db`.
+
+**Importante:** realiza una copia de seguridad de este archivo antes de actualizar el plugin o realizar cambios importantes.
 
 ## 🐛 Reportes y sugerencias
 
