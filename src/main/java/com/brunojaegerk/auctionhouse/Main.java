@@ -66,7 +66,7 @@ public class Main extends PluginBase {
 
         } catch (SQLException exception) {
             getLogger().error(
-                    "No se pudo inicializar SQLite. AuctionHouse se desactivará.",
+                    "No se pudo inicializar H2. AuctionHouse se desactivará.",
                     exception
             );
 
@@ -102,7 +102,7 @@ public class Main extends PluginBase {
         getLogger().info(
                 "AuctionHouse 1.0.0 se ha habilitado correctamente."
         );
-        getLogger().info("Base de datos SQLite conectada.");
+        getLogger().info("Base de datos H2 conectada.");
         getLogger().info("Gestor de subastas inicializado.");
         getLogger().info("Gestor de objetos pendientes inicializado.");
         getLogger().info("Servicio de subastas inicializado.");
