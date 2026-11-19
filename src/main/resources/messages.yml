@@ -17,7 +17,7 @@ auction:
   inventory-full: "&cNo tienes suficiente espacio en el inventario."
   listing-created: "&a¡Publicación creada correctamente!"
   listing-id: "&7ID: &f#{id}"
-  listing-price: "&7Precio de la pila: &a{price}"
+  listing-price: "&7Precio de la pila: &a{symbol}{price}"
   listing-duration: "&7Duración: &f{hours} horas"
   listing-limit: "&cHas alcanzado tu límite de {limit} publicaciones activas."
   self-purchase: "&cNo puedes comprar tu propia publicación."
@@ -68,7 +68,7 @@ auction:
     seller-payment-failed: "&cNo se pudo completar el pago al vendedor. Se intentará revertir la compra."
     confirmation-failed: "&cNo se pudo confirmar la venta en la base de datos. Se intentará revertir la compra."
     processing-error: "&cOcurrió un error al procesar la compra. Se intentará revertir la operación."
-    success: "&aHas comprado el artículo de la subasta &e#{id}&a por &e{price}&a."
+    success: "&aHas comprado el artículo de la subasta &e#{id}&a por &e{symbol}{price}&a."
     refund-failed: "&cAtención: no se pudo devolver el cobro automáticamente. Contacta con un administrador."
 
 economy:
