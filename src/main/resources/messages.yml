@@ -11,6 +11,8 @@ auction:
   not-found: "&cNo se encontró esa publicación."
   invalid-price: "&cEl precio debe ser un número válido."
   price-not-positive: "&cEl precio debe ser positivo."
+  currency:
+    invalid: "&cLa moneda '{currency}' no existe o no está habilitada. Usa el ID de una moneda disponible."
   price-range: "&cEl precio debe estar entre {min} y {max}."
   inventory-full: "&cNo tienes suficiente espacio en el inventario."
   listing-created: "&a¡Publicación creada correctamente!"
@@ -26,7 +28,7 @@ auction:
     no-permission: "&cNo tienes permiso para usar este comando."
     test-no-permission: "&cNo tienes permiso para usar esta prueba."
     sell-no-permission: "&cNo tienes permiso para publicar objetos."
-    sell-usage: "&cUso correcto: /ah sell <precio>"
+    sell-usage: "&cUso correcto: /ah sell <precio> <moneda>"
     unavailable: "&cLa casa de subastas no está disponible."
     service-unavailable: "&cEl servicio de subastas no está disponible."
 
