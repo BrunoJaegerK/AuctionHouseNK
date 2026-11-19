@@ -7,7 +7,7 @@ auction:
 
   item:
     seller: "&7Vendedor: &f{seller}"
-    price: "&7Precio: &6${price}"
+    price: "&7Precio: &6{symbol}{price}"
     auction-id: "&8ID de subasta: {id}"
     own-listing: "&7Esta es tu publicación."
     buy-hint: "&aHaz clic para comprar"
@@ -57,7 +57,7 @@ auction:
 
 purchase:
   title: "&8Confirmar compra"
-  content: "&fObjeto: &b{item}\n\n&fCantidad: &b{amount}\n\n&fVendedor: &b{seller}\n\n&fPrecio: &6${price}\n\n&7¿Deseas confirmar esta compra?"
+  content: "&fObjeto: &b{item}\n\n&fCantidad: &b{amount}\n\n&fVendedor: &b{seller}\n\n&fPrecio: &6{symbol}{price}\n\n&7¿Deseas confirmar esta compra?"
   confirm: "&aConfirmar"
   cancel: "&cCancelar"
 
