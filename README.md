@@ -250,6 +250,7 @@ Permite personalizar los textos visibles en los inventarios personalizados y for
 - **FakeInventories 1.1.8-PM1E-IWareQ**.
 - **FormConstructor 3.1.0**.
 - **EconomyAPI 2.0.7**.
+- **EconomyExpandNK**, opcional, para utilizar monedas secundarias.
 - **LuckPerms**, opcional, para administrar los permisos de los rangos.
 
 ### 📥 Enlaces de dependencias
@@ -259,7 +260,8 @@ Permite personalizar los textos visibles en los inventarios personalizados y for
 | NukkitPetteriM1Edition | Compatible con PM1E | [GitHub](https://github.com/PetteriM1/NukkitPetteriM1Edition) |
 | FakeInventories | 1.1.8-PM1E-IWareQ | [GitHub](https://github.com/IWareQ/FakeInventories) |
 | FormConstructor | 3.1.0 | [GitHub](https://github.com/MEFRREEX/FormConstructor) |
-| EconomyAPI | 2.0.7 | [GitHub](https://github.com/CloudburstMC/EconomyAPI) |
+| EconomyAPI | 2.0.7 | [GitHub](https://github.com/Nukkit-coders/EconomyAPI) |
+| EconomyExpandNK | Opcional | [GitHub](https://github.com/BrunoJaegerK/EconomyExpandNK) |
 | LuckPerms | Versión compatible | [GitHub](https://github.com/LuckPerms/LuckPerms) |
 
 **Importante:** utiliza las versiones de las dependencias compatibles con las indicadas en el proyecto.
