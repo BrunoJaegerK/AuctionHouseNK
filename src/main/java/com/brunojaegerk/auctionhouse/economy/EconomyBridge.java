@@ -176,7 +176,15 @@ public final class EconomyBridge {
 
     private Object economyApiInstance() {
         try {
-            Class<?> type = Class.forName("me.onebone.economyapi.EconomyAPI", true, plugin.getClass().getClassLoader());
+            Plugin economyPlugin = plugin.getServer().getPluginManager().getPlugin("EconomyAPI");
+            if (economyPlugin == null || !economyPlugin.isEnabled()) {
+                return null;
+            }
+            Class<?> type = Class.forName(
+                    "me.onebone.economyapi.EconomyAPI",
+                    true,
+                    economyPlugin.getClass().getClassLoader()
+            );
             return type.getMethod("getInstance").invoke(null);
         } catch (ReflectiveOperationException | LinkageError exception) {
             return null;
@@ -197,7 +205,11 @@ public final class EconomyBridge {
     private boolean isEconomyApiSuccess(Object result) {
         if (!(result instanceof Number)) return false;
         try {
-            Class<?> type = Class.forName("me.onebone.economyapi.EconomyAPI", true, plugin.getClass().getClassLoader());
+            Class<?> type = Class.forName(
+                    "me.onebone.economyapi.EconomyAPI",
+                    true,
+                    api.getClass().getClassLoader()
+            );
             return ((Number) result).intValue() == type.getField("RET_SUCCESS").getInt(null);
         } catch (ReflectiveOperationException | LinkageError exception) {
             return ((Number) result).intValue() == 1;
