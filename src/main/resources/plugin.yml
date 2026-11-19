@@ -10,6 +10,9 @@ depend:
   - FormConstructor
   - EconomyAPI
 
+softdepend:
+  - EconomyExpandNK
+
 commands:
   ah:
     description: Abre la casa de subastas
