@@ -3,9 +3,7 @@ package com.brunojaegerk.auctionhouse.auction;
 import cn.nukkit.Player;
 import cn.nukkit.inventory.PlayerInventory;
 import cn.nukkit.item.Item;
-import me.onebone.economyapi.EconomyAPI;
-
-import com.brunojaegerk.auctionhouse.Main;
+import com.brunojaegerk.auctionhouse.economy.EconomyBridge;
 import com.brunojaegerk.auctionhouse.config.MessageManager;
 
 import java.io.IOException;
@@ -16,15 +14,16 @@ import java.util.UUID;
 public class AuctionPurchaseService {
 
     private final AuctionManager auctionManager;
-    private final EconomyAPI economy;
+    private final EconomyBridge economy;
     private final MessageManager messageManager;
 
     public AuctionPurchaseService(
             AuctionManager auctionManager,
-            MessageManager messageManager
+            MessageManager messageManager,
+            EconomyBridge economy
     ) {
         this.auctionManager = auctionManager;
-        this.economy = EconomyAPI.getInstance();
+        this.economy = economy;
         this.messageManager = messageManager;
     }
 
@@ -141,8 +140,8 @@ public class AuctionPurchaseService {
                 return;
             }
 
-            if (!economy.hasAccount(buyerUUID)
-                    || !economy.hasAccount(sellerUUID)) {
+            if (!economy.hasAccount(buyerUUID, auction.getCurrencyId())
+                    || !economy.hasAccount(sellerUUID, auction.getCurrencyId())) {
                 buyer.sendMessage(
                         messageManager.getChat("auction.purchase.account-error")
                 );
@@ -181,11 +180,11 @@ public class AuctionPurchaseService {
             }
 
             // Cobra al comprador.
-            int debitResult = economy.reduceMoney(
-                    buyerUUID, auction.getPrice()
+            boolean debitResult = economy.withdraw(
+                    buyerUUID, auction.getCurrencyId(), auction.getPrice()
             );
 
-            if (debitResult != EconomyAPI.RET_SUCCESS) {
+            if (!debitResult) {
                 buyer.sendMessage(
                         messageManager.getChat("auction.purchase.charge-failed")
                 );
@@ -204,11 +203,11 @@ public class AuctionPurchaseService {
             }
 
             // Paga al vendedor.
-            int creditResult = economy.addMoney(
-                    auction.getSellerUUID(), auction.getPrice()
+            boolean creditResult = economy.deposit(
+                    auction.getSellerUUID(), auction.getCurrencyId(), auction.getPrice()
             );
 
-            if (creditResult != EconomyAPI.RET_SUCCESS) {
+            if (!creditResult) {
                 buyer.sendMessage(
                         messageManager.getChat("auction.purchase.seller-payment-failed")
                 );
@@ -239,7 +238,8 @@ public class AuctionPurchaseService {
                                             java.util.Locale.US,
                                             "%.2f",
                                             auction.getPrice()
-                                    )
+                                    ),
+                                    "symbol", economy.getSymbol(auction.getCurrencyId())
                             )
                     )
             );
@@ -272,9 +272,9 @@ public class AuctionPurchaseService {
                 }
 
                 if (sellerPaid) {
-                    int result = economy.reduceMoney(sellerUUID, price);
+                    boolean result = economy.withdraw(sellerUUID, auction.getCurrencyId(), price);
 
-                    if (result != EconomyAPI.RET_SUCCESS) {
+                    if (!result) {
                         System.err.println(
                                 "[AuctionHouse] No se pudo revertir "
                                         + "el pago al vendedor de la subasta #"
@@ -284,9 +284,9 @@ public class AuctionPurchaseService {
                 }
 
                 if (charged) {
-                    int result = economy.addMoney(buyer.getUniqueId(), price);
+                    boolean result = economy.deposit(buyer.getUniqueId(), auction.getCurrencyId(), price);
 
-                    if (result != EconomyAPI.RET_SUCCESS) {
+                    if (!result) {
                         System.err.println(
                                 "[AuctionHouse] No se pudo devolver el cobro "
                                         + "al comprador de la subasta #"
