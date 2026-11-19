@@ -18,6 +18,7 @@ public final class Auction {
     private final String sellerName;
     private final byte[] itemData;
     private final double price;
+    private final String currencyId;
     private final long createdAt;
     private final long expiresAt;
 
@@ -29,6 +30,20 @@ public final class Auction {
             String sellerName,
             byte[] itemData,
             double price,
+            long createdAt,
+            long expiresAt,
+            Status status
+    ) {
+        this(id, sellerUUID, sellerName, itemData, price, "economyapi", createdAt, expiresAt, status);
+    }
+
+    public Auction(
+            long id,
+            UUID sellerUUID,
+            String sellerName,
+            byte[] itemData,
+            double price,
+            String currencyId,
             long createdAt,
             long expiresAt,
             Status status
@@ -57,6 +72,12 @@ public final class Auction {
             );
         }
 
+        if (currencyId == null || currencyId.isBlank()) {
+            throw new IllegalArgumentException(
+                    "La moneda de la publicación no puede estar vacía."
+            );
+        }
+
         if (createdAt < 0 || expiresAt <= createdAt) {
             throw new IllegalArgumentException(
                     "Las fechas de la publicación no son válidas."
@@ -74,6 +95,7 @@ public final class Auction {
         this.sellerName = sellerName;
         this.itemData = itemData.clone();
         this.price = price;
+        this.currencyId = currencyId.trim().toLowerCase(java.util.Locale.ROOT);
         this.createdAt = createdAt;
         this.expiresAt = expiresAt;
         this.status = status;
@@ -97,6 +119,10 @@ public final class Auction {
 
     public double getPrice() {
         return price;
+    }
+
+    public String getCurrencyId() {
+        return currencyId;
     }
 
     public long getCreatedAt() {
