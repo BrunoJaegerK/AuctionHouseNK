@@ -85,6 +85,7 @@ public final class DatabaseManager {
                 seller_name VARCHAR(255) NOT NULL,
                 item_data BLOB NOT NULL,
                 price DOUBLE PRECISION NOT NULL CHECK (price > 0),
+                currency_id VARCHAR(64) NOT NULL DEFAULT 'economyapi',
                 created_at BIGINT NOT NULL,
                 expires_at BIGINT NOT NULL,
                 status VARCHAR(32) NOT NULL DEFAULT 'ACTIVE'
@@ -113,6 +114,8 @@ public final class DatabaseManager {
 
         try (Statement statement = connection.createStatement()) {
             statement.execute(createListings);
+            // Migración compatible: las publicaciones anteriores siguen usando EconomyAPI.
+            statement.execute("ALTER TABLE auction_listings ADD COLUMN IF NOT EXISTS currency_id VARCHAR(64) NOT NULL DEFAULT 'economyapi'");
             statement.execute(createPendingItems);
             statement.execute(createSellerIndex);
             statement.execute(createExpiryIndex);
