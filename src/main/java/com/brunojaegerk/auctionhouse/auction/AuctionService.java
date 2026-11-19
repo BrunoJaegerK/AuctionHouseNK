@@ -38,6 +38,7 @@ public final class AuctionService {
     public long prepareListing(
             Player player,
             double price,
+            String currencyId,
             long durationMillis
     ) throws SQLException, IOException {
 
@@ -87,6 +88,7 @@ public final class AuctionService {
                 sellerName,
                 itemData,
                 price,
+                currencyId,
                 now,
                 now + durationMillis,
                 Auction.Status.PENDING

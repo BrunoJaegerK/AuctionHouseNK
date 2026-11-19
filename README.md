@@ -25,11 +25,11 @@ El objetivo es ofrecer un sistema de comercio entre jugadores con interfaces gr�
 ## ✨ Características principales
 
 - 🔨 **Casa de subastas:** permite publicar objetos y consultar las ofertas disponibles.
-- 🛒 **Sistema de compras:** los jugadores pueden comprar artículos utilizando EconomyAPI.
+- 🛒 **Sistema de compras:** los jugadores pueden comprar artículos usando la misma moneda con la que fueron publicados.
 - 🖥️ **Interfaz gráfica:** navegación mediante inventarios personalizados con FakeInventories.
 - 📄 **Paginación:** permite explorar las publicaciones disponibles.
 - 👤 **Publicaciones propias:** consulta las ofertas publicadas por el jugador.
-- 💰 **Economía integrada:** utiliza EconomyAPI para gestionar las transacciones.
+- 💰 **Economía integrada:** admite EconomyAPI y las monedas secundarias habilitadas de EconomyExpandNK. Cada publicación conserva su moneda, símbolo y método de pago.
 - 🔒 **Protección de compras:** evita que una misma publicación sea procesada simultáneamente por varios compradores.
 - 🎒 **Comprobación de inventario:** valida el espacio disponible antes de entregar un objeto.
 - ⏳ **Vencimiento automático:** las publicaciones tienen una duración configurable.
@@ -46,9 +46,21 @@ El objetivo es ofrecer un sistema de comercio entre jugadores con interfaces gr�
 | Comando | Descripción |
 |---|---|
 | `/ah` | Abre la casa de subastas. |
-| `/ah sell <precio>` | Publica el objeto que el jugador tiene en la mano. |
+| `/ah sell <precio> <moneda>` | Publica el objeto en la moneda indicada. |
 
 Los comandos y sus permisos están definidos en `plugin.yml`.
+
+### 💱 Monedas
+
+`EconomyAPI` se identifica como `economyapi` y sigue siendo la moneda predeterminada si se omite el tercer argumento. Para utilizar una moneda secundaria, escribe su ID tal como aparece en `plugins/EconomyExpandNK/currencies.yml` (por ejemplo, `crystals`). El símbolo configurado se muestra en el precio de la publicación y en la confirmación de compra. Las publicaciones creadas antes de esta actualización se migran automáticamente a `economyapi`.
+
+Ejemplos:
+
+```text
+/ah sell 500 economyapi
+/ah sell 250 crystals
+/ah sell 100 tokens
+```
 
 ## 🖥️ Interfaz de la casa de subastas
 
@@ -238,6 +250,7 @@ Permite personalizar los textos visibles en los inventarios personalizados y for
 - **FakeInventories 1.1.8-PM1E-IWareQ**.
 - **FormConstructor 3.1.0**.
 - **EconomyAPI 2.0.7**.
+- **EconomyExpandNK**, opcional, para utilizar monedas secundarias.
 - **LuckPerms**, opcional, para administrar los permisos de los rangos.
 
 ### 📥 Enlaces de dependencias
@@ -247,7 +260,8 @@ Permite personalizar los textos visibles en los inventarios personalizados y for
 | NukkitPetteriM1Edition | Compatible con PM1E | [GitHub](https://github.com/PetteriM1/NukkitPetteriM1Edition) |
 | FakeInventories | 1.1.8-PM1E-IWareQ | [GitHub](https://github.com/IWareQ/FakeInventories) |
 | FormConstructor | 3.1.0 | [GitHub](https://github.com/MEFRREEX/FormConstructor) |
-| EconomyAPI | 2.0.7 | [GitHub](https://github.com/CloudburstMC/EconomyAPI) |
+| EconomyAPI | 2.0.7 | [GitHub](https://github.com/Nukkit-coders/EconomyAPI) |
+| EconomyExpandNK | Opcional | [GitHub](https://github.com/BrunoJaegerK/EconomyExpandNK) |
 | LuckPerms | Versión compatible | [GitHub](https://github.com/LuckPerms/LuckPerms) |
 
 **Importante:** utiliza las versiones de las dependencias compatibles con las indicadas en el proyecto.
