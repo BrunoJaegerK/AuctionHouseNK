@@ -16,6 +16,7 @@ import com.brunojaegerk.auctionhouse.storage.DatabaseManager;
 import com.brunojaegerk.auctionhouse.storage.PendingItemManager;
 import com.brunojaegerk.auctionhouse.auction.ListingLimitManager;
 import com.brunojaegerk.auctionhouse.config.MessageManager;
+import com.brunojaegerk.auctionhouse.economy.EconomyBridge;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -32,6 +33,7 @@ public class Main extends PluginBase {
     private AuctionPurchaseService auctionPurchaseService;
     private ListingLimitManager listingLimitManager;
     private MessageManager messageManager;
+    private EconomyBridge economyBridge;
 
     @Override
     public void onEnable() {
@@ -40,6 +42,7 @@ public class Main extends PluginBase {
         databaseManager = new DatabaseManager(this);
         listingLimitManager = new ListingLimitManager(this);
         messageManager = new MessageManager(this);
+        economyBridge = new EconomyBridge(this);
 
         try {
             databaseManager.initialize();
@@ -49,7 +52,7 @@ public class Main extends PluginBase {
             pendingItemManager = new PendingItemManager(databaseManager);
 
             auctionPurchaseService =
-                    new AuctionPurchaseService(auctionManager, messageManager);
+                    new AuctionPurchaseService(auctionManager, messageManager, economyBridge);
 
             auctionMenu = new AuctionMenu(
                     this,
@@ -107,7 +110,7 @@ public class Main extends PluginBase {
         getLogger().info("Gestor de objetos pendientes inicializado.");
         getLogger().info("Servicio de subastas inicializado.");
         getLogger().info("Servicio de compras inicializado.");
-        getLogger().info("Economía: EconomyAPI.");
+        getLogger().info("Economía: EconomyAPI" + (economyBridge.getAvailableCurrencyIds().size() > 1 ? " + EconomyExpandNK." : "."));
     }
 
     @Override
@@ -184,7 +187,7 @@ public class Main extends PluginBase {
             return true;
         }
 
-        if (args.length == 2
+        if ((args.length == 2 || args.length == 3)
                 && args[0].equalsIgnoreCase("sell")) {
 
             if (!player.hasPermission("auctionhouse.sell")) {
@@ -194,7 +197,10 @@ public class Main extends PluginBase {
                 return true;
             }
 
-            sellItem(player, args[1]);
+            String currencyId = args.length == 3
+                    ? economyBridge.normalizeId(args[2])
+                    : EconomyBridge.ECONOMY_API;
+            sellItem(player, args[1], currencyId);
             return true;
         }
 
@@ -289,9 +295,20 @@ public class Main extends PluginBase {
 
     private void sellItem(
             Player player,
-            String priceArgument
+            String priceArgument,
+            String currencyId
     ) {
         final double price;
+
+        if (!economyBridge.isAvailable(currencyId)) {
+            player.sendMessage(
+                    messageManager.getChat(
+                            "auction.currency.invalid",
+                            Map.of("currency", currencyId)
+                    )
+            );
+            return;
+        }
 
         try {
             price = Double.parseDouble(priceArgument);
@@ -376,6 +393,7 @@ public class Main extends PluginBase {
             long listingId = auctionService.prepareListing(
                     player,
                     price,
+                    currencyId,
                     durationMillis
             );
 
@@ -391,7 +409,7 @@ public class Main extends PluginBase {
             player.sendMessage(
                     messageManager.getChat(
                             "auction.listing-price",
-                            Map.of("price", price)
+                            Map.of("price", price, "symbol", economyBridge.getSymbol(currencyId))
                     )
             );
             player.sendMessage(
