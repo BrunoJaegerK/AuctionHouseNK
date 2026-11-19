@@ -137,7 +137,7 @@ public final class EconomyBridge {
         if (ECONOMY_API.equals(id)) {
             Object api = economyApiInstance();
             Object result = invokeEconomyApi(api, "addMoney", new Class<?>[]{UUID.class, double.class}, player, amount);
-            return isEconomyApiSuccess(result);
+            return isEconomyApiSuccess(api, result);
         }
         Object result = invokeSecondary(
                 "deposit",
