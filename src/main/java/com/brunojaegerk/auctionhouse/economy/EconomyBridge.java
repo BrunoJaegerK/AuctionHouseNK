@@ -2,7 +2,6 @@ package com.brunojaegerk.auctionhouse.economy;
 
 import cn.nukkit.plugin.Plugin;
 import cn.nukkit.plugin.PluginBase;
-import me.onebone.economyapi.EconomyAPI;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -23,11 +22,9 @@ public final class EconomyBridge {
     public static final String ECONOMY_API = "economyapi";
 
     private final PluginBase plugin;
-    private final EconomyAPI economyAPI;
 
     public EconomyBridge(PluginBase plugin) {
         this.plugin = plugin;
-        this.economyAPI = EconomyAPI.getInstance();
     }
 
     public String normalizeId(String id) {
@@ -37,7 +34,7 @@ public final class EconomyBridge {
     public boolean isAvailable(String currencyId) {
         String id = normalizeId(currencyId);
         if (ECONOMY_API.equals(id)) {
-            return economyAPI != null;
+            return economyApiInstance() != null;
         }
         return getCurrency(id) != null;
     }
@@ -57,7 +54,7 @@ public final class EconomyBridge {
 
     public List<String> getAvailableCurrencyIds() {
         List<String> ids = new ArrayList<>();
-        if (economyAPI != null) {
+        if (economyApiInstance() != null) {
             ids.add(ECONOMY_API);
         }
         Object secondary = getSecondaryEconomy();
@@ -92,7 +89,9 @@ public final class EconomyBridge {
     public boolean hasAccount(UUID player, String currencyId) {
         String id = normalizeId(currencyId);
         if (ECONOMY_API.equals(id)) {
-            return economyAPI != null && economyAPI.hasAccount(player);
+            Object api = economyApiInstance();
+            Object result = invokeEconomyApi(api, "hasAccount", new Class<?>[]{UUID.class}, player);
+            return Boolean.TRUE.equals(result);
         }
         return getBalance(player, id) != null;
     }
@@ -103,8 +102,9 @@ public final class EconomyBridge {
             return false;
         }
         if (ECONOMY_API.equals(id)) {
-            return economyAPI != null
-                    && economyAPI.reduceMoney(player, amount) == EconomyAPI.RET_SUCCESS;
+            Object api = economyApiInstance();
+            Object result = invokeEconomyApi(api, "reduceMoney", new Class<?>[]{UUID.class, double.class}, player, amount);
+            return isEconomyApiSuccess(result);
         }
         Object result = invokeSecondary(
                 "withdraw",
@@ -120,8 +120,9 @@ public final class EconomyBridge {
             return false;
         }
         if (ECONOMY_API.equals(id)) {
-            return economyAPI != null
-                    && economyAPI.addMoney(player, amount) == EconomyAPI.RET_SUCCESS;
+            Object api = economyApiInstance();
+            Object result = invokeEconomyApi(api, "addMoney", new Class<?>[]{UUID.class, double.class}, player, amount);
+            return isEconomyApiSuccess(result);
         }
         Object result = invokeSecondary(
                 "deposit",
@@ -153,6 +154,37 @@ public final class EconomyBridge {
             return api.getMethod("getCurrency", String.class).invoke(secondary, id);
         } catch (ReflectiveOperationException | LinkageError exception) {
             return null;
+        }
+    }
+
+
+    private Object economyApiInstance() {
+        try {
+            Class<?> type = Class.forName("me.onebone.economyapi.EconomyAPI", true, plugin.getClass().getClassLoader());
+            return type.getMethod("getInstance").invoke(null);
+        } catch (ReflectiveOperationException | LinkageError exception) {
+            return null;
+        }
+    }
+
+    private Object invokeEconomyApi(Object api, String method, Class<?>[] parameterTypes, Object... arguments) {
+        if (api == null) return null;
+        try {
+            Class<?> type = Class.forName("me.onebone.economyapi.EconomyAPI", true, api.getClass().getClassLoader());
+            return type.getMethod(method, parameterTypes).invoke(api, arguments);
+        } catch (ReflectiveOperationException | LinkageError exception) {
+            plugin.getLogger().error("Error al ejecutar " + method + " en EconomyAPI.", exception);
+            return null;
+        }
+    }
+
+    private boolean isEconomyApiSuccess(Object result) {
+        if (!(result instanceof Number)) return false;
+        try {
+            Class<?> type = Class.forName("me.onebone.economyapi.EconomyAPI", true, plugin.getClass().getClassLoader());
+            return ((Number) result).intValue() == type.getField("RET_SUCCESS").getInt(null);
+        } catch (ReflectiveOperationException | LinkageError exception) {
+            return ((Number) result).intValue() == 1;
         }
     }
 
