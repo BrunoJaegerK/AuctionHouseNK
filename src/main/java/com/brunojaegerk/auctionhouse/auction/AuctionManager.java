@@ -38,10 +38,11 @@ public final class AuctionManager {
                     seller_name,
                     item_data,
                     price,
+                    currency_id,
                     created_at,
                     expires_at,
                     status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """;
 
         Connection connection = databaseManager.getConnection();
@@ -54,9 +55,10 @@ public final class AuctionManager {
             statement.setString(2, auction.getSellerName());
             statement.setBytes(3, auction.getItemData());
             statement.setDouble(4, auction.getPrice());
-            statement.setLong(5, auction.getCreatedAt());
-            statement.setLong(6, auction.getExpiresAt());
-            statement.setString(7, auction.getStatus().name());
+            statement.setString(5, auction.getCurrencyId());
+            statement.setLong(6, auction.getCreatedAt());
+            statement.setLong(7, auction.getExpiresAt());
+            statement.setString(8, auction.getStatus().name());
 
             int affectedRows = statement.executeUpdate();
 
@@ -240,6 +242,7 @@ public final class AuctionManager {
                     result.getString("seller_name"),
                     result.getBytes("item_data"),
                     result.getDouble("price"),
+                    result.getString("currency_id"),
                     result.getLong("created_at"),
                     result.getLong("expires_at"),
                     status
