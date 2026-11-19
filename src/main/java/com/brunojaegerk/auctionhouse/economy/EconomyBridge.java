@@ -39,6 +39,21 @@ public final class EconomyBridge {
         return getCurrency(id) != null;
     }
 
+    public double normalizeAmount(String currencyId, double amount) {
+        String id = normalizeId(currencyId);
+        int decimals = 2;
+        if (!ECONOMY_API.equals(id)) {
+            Object currency = getCurrency(id);
+            Object value = invoke(currency, "getDecimals");
+            if (value instanceof Number) {
+                decimals = Math.max(0, Math.min(8, ((Number) value).intValue()));
+            }
+        }
+        return BigDecimal.valueOf(amount)
+                .setScale(decimals, java.math.RoundingMode.DOWN)
+                .doubleValue();
+    }
+
     public String getSymbol(String currencyId) {
         String id = normalizeId(currencyId);
         if (ECONOMY_API.equals(id)) {
@@ -151,7 +166,8 @@ public final class EconomyBridge {
             Class<?> api = Class.forName(
                     "com.bruno.economyexpand.api.SecondaryEconomy", true, loader
             );
-            return api.getMethod("getCurrency", String.class).invoke(secondary, id);
+            Object currency = api.getMethod("getCurrency", String.class).invoke(secondary, id);
+            return Boolean.TRUE.equals(invoke(currency, "isEnabled")) ? currency : null;
         } catch (ReflectiveOperationException | LinkageError exception) {
             return null;
         }
