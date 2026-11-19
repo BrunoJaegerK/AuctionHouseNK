@@ -119,7 +119,7 @@ public final class EconomyBridge {
         if (ECONOMY_API.equals(id)) {
             Object api = economyApiInstance();
             Object result = invokeEconomyApi(api, "reduceMoney", new Class<?>[]{UUID.class, double.class}, player, amount);
-            return isEconomyApiSuccess(result);
+            return isEconomyApiSuccess(api, result);
         }
         Object result = invokeSecondary(
                 "withdraw",
@@ -202,7 +202,7 @@ public final class EconomyBridge {
         }
     }
 
-    private boolean isEconomyApiSuccess(Object result) {
+    private boolean isEconomyApiSuccess(Object api, Object result) {
         if (!(result instanceof Number)) return false;
         try {
             Class<?> type = Class.forName(
