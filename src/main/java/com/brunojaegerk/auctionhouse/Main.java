@@ -146,6 +146,10 @@ public class Main extends PluginBase {
         return messageManager;
     }
 
+    public EconomyBridge getEconomyBridge() {
+        return economyBridge;
+    }
+
     @Override
     public boolean onCommand(
             CommandSender sender,
