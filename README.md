@@ -52,7 +52,9 @@ Los comandos y sus permisos están definidos en `plugin.yml`.
 
 ### 💱 Monedas
 
-`EconomyAPI` se identifica como `economyapi` y sigue siendo la moneda predeterminada si se omite el tercer argumento. Para utilizar una moneda secundaria, escribe su ID tal como aparece en `plugins/EconomyExpandNK/currencies.yml` (por ejemplo, `crystals`). El símbolo configurado se muestra en el precio de la publicación y en la confirmación de compra. Las publicaciones creadas antes de esta actualización se migran automáticamente a `economyapi`.
+AuctionHouseNK mantiene **EconomyAPI** como economía predeterminada. El soporte para monedas secundarias se habilita mediante [EconomyExpandNK](https://github.com/BrunoJaegerK/EconomyExpandNK), un plugin **opcional**: solo necesitas instalarlo si quieres utilizar monedas adicionales.
+
+`EconomyAPI` se identifica como `economyapi`. Para utilizar una moneda secundaria, escribe su ID tal como aparece en `plugins/EconomyExpandNK/currencies.yml` (por ejemplo, `crystals`). El símbolo configurado se muestra en el precio de la publicación y en la confirmación de compra. Las publicaciones creadas antes de esta actualización se migran automáticamente a `economyapi`.
 
 Ejemplos:
 
