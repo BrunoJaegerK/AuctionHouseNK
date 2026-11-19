@@ -302,7 +302,7 @@ public class Main extends PluginBase {
             String priceArgument,
             String currencyId
     ) {
-        final double price;
+        double price;
 
         if (!economyBridge.isAvailable(currencyId)) {
             player.sendMessage(
@@ -321,6 +321,10 @@ public class Main extends PluginBase {
                     messageManager.getChat("auction.invalid-price")
             );
             return;
+        }
+
+        if (Double.isFinite(price)) {
+            price = economyBridge.normalizeAmount(currencyId, price);
         }
 
         if (!Double.isFinite(price) || price <= 0) {
