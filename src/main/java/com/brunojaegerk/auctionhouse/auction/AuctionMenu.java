@@ -134,7 +134,9 @@ public final class AuctionMenu {
                                                     Locale.US,
                                                     "%.2f",
                                                     auction.getPrice()
-                                            )
+                                            ),
+                                            "symbol",
+                                            ((Main) plugin).getEconomyBridge().getSymbol(auction.getCurrencyId())
                                     )
                             ),
                             messageManager.getMenu(
@@ -475,7 +477,8 @@ public final class AuctionMenu {
                         "item", item.getName(),
                         "amount", item.getCount(),
                         "seller", auction.getSellerName(),
-                        "price", price
+                        "price", price,
+                        "symbol", ((Main) plugin).getEconomyBridge().getSymbol(auction.getCurrencyId())
                 )
         );
 
